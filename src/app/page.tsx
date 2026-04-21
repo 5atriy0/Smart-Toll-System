@@ -1,10 +1,6 @@
-import { GateStatus } from '@/components/dashboard/GateStatus'
-import { LiveSensorFeed } from '@/components/dashboard/LiveSensorFeed'
-import { VisualIndicators } from '@/components/dashboard/VisualIndicators'
 import { UserManagement } from '@/components/dashboard/UserManagement'
 import { TransactionLogs } from '@/components/dashboard/TransactionLogs'
 import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview'
-import { SystemSettings } from '@/components/dashboard/SystemSettings'
 
 export default function DashboardPage() {
   return (
@@ -14,23 +10,13 @@ export default function DashboardPage() {
         <p className="text-muted-foreground text-sm">Real-time monitoring and analytics for the Smart Toll System.</p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <GateStatus />
-        <LiveSensorFeed />
-        <VisualIndicators />
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <UserManagement />
-        <TransactionLogs />
-      </div>
-
       <div className="grid grid-cols-1 gap-6">
         <AnalyticsOverview />
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <SystemSettings />
+        <UserManagement />
+        <TransactionLogs />
       </div>
     </div>
   )

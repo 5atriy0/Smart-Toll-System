@@ -31,3 +31,42 @@ export const MOCK_REVENUE = [
   { name: 'Thu', revenue: 1800000 },
   { name: 'Fri', revenue: 2000000 },
 ]
+
+export const MOCK_VEHICLES_IN_OUT = [
+  { name: 'Mon', in: 1200, out: 1150 },
+  { name: 'Tue', in: 1500, out: 1420 },
+  { name: 'Wed', in: 1400, out: 1450 },
+  { name: 'Thu', in: 1800, out: 1750 },
+  { name: 'Fri', in: 2000, out: 1950 },
+  { name: 'Sat', in: 2200, out: 2100 },
+  { name: 'Sun', in: 2100, out: 2150 },
+];
+
+export const MOCK_VEHICLES_INSIDE = [
+  { time: '00:00', count: 120 },
+  { time: '04:00', count: 80 },
+  { time: '08:00', count: 450 },
+  { time: '12:00', count: 520 },
+  { time: '16:00', count: 680 },
+  { time: '20:00', count: 310 },
+];
+
+export const MOCK_AVG_SPEED = [
+  { name: 'Mon', speed: 85 },
+  { name: 'Tue', speed: 82 },
+  { name: 'Wed', speed: 84 },
+  { name: 'Thu', speed: 79 },
+  { name: 'Fri', speed: 75 },
+  { name: 'Sat', speed: 90 },
+  { name: 'Sun', speed: 92 },
+];
+
+export const MOCK_TRAVEL_TIME = [
+  { name: 'Mon', time: 45 },
+  { name: 'Tue', time: 48 },
+  { name: 'Wed', time: 46 },
+  { name: 'Thu', time: 52 },
+  { name: 'Fri', time: 58 },
+  { name: 'Sat', time: 40 },
+  { name: 'Sun', time: 38 },
+];
