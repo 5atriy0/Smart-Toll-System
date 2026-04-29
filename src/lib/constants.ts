@@ -1,14 +1,14 @@
 export const MOCK_TRANSACTIONS = [
-  { id: 'TX-001', time: '10:45:22', rfid: '04-89-AB-CD', plate: 'B 1234 XYZ', status: 'Granted', loc: 'Gate A' },
-  { id: 'TX-002', time: '10:42:15', rfid: 'A1-B2-C3-D4', plate: 'D 5678 G', status: 'Granted', loc: 'Gate A' },
-  { id: 'TX-003', time: '10:38:05', rfid: 'FF-EE-DD-CC', plate: 'UNKNOWN', status: 'Denied', loc: 'Gate A' },
-  { id: 'TX-004', time: '10:30:11', rfid: '12-34-56-78', plate: 'B 9999 AA', status: 'Granted', loc: 'Gate B' },
+  { id: 'TX-001', time: '10:45:22', rfid: '04-89-AB-CD', plate: 'B 1234 XYZ', status: 'Granted', loc: 'Gerbang A' },
+  { id: 'TX-002', time: '10:42:15', rfid: 'A1-B2-C3-D4', plate: 'D 5678 G', status: 'Granted', loc: 'Gerbang A' },
+  { id: 'TX-003', time: '10:38:05', rfid: 'FF-EE-DD-CC', plate: 'TIDAK DIKETAHUI', status: 'Denied', loc: 'Gerbang A' },
+  { id: 'TX-004', time: '10:30:11', rfid: '12-34-56-78', plate: 'B 9999 AA', status: 'Granted', loc: 'Gerbang B' },
 ]
 
 export const MOCK_USERS = [
-  { name: 'John Doe', rfid: '04-89-AB-CD', balance: 'Rp 150.000', status: 'Active' },
-  { name: 'Jane Smith', rfid: '12-34-56-78', balance: 'Rp 50.000', status: 'Active' },
-  { name: 'Michael C', rfid: 'FF-EE-DD-CC', balance: 'Rp 0', status: 'Suspended' },
+  { name: 'John Doe', plateNumber: 'B 1234 XYZ', rfid: '04-89-AB-CD', balance: 'Rp 150.000', status: 'Active', role: 'Admin' },
+  { name: 'Jane Smith', plateNumber: 'D 5678 G', rfid: '12-34-56-78', balance: 'Rp 50.000', status: 'Active', role: 'User' },
+  { name: 'Michael C', plateNumber: 'TIDAK DIKETAHUI', rfid: 'FF-EE-DD-CC', balance: 'Rp 0', status: 'Suspended', role: 'User' },
 ]
 
 export const MOCK_ANALYTICS_HOURLY = [
@@ -21,25 +21,32 @@ export const MOCK_ANALYTICS_HOURLY = [
 
 export const MOCK_ANALYTICS_RATIO = [
   { name: 'Valid', value: 85, fill: 'hsl(154, 61%, 43%)' },
-  { name: 'Invalid', value: 15, fill: 'hsl(0, 84%, 60%)' },
+  { name: 'Tidak Valid', value: 15, fill: 'hsl(0, 84%, 60%)' },
+]
+
+export const MOCK_SYSTEM_ERRORS = [
+  { name: 'Saldo Tidak Cukup', value: 45, fill: 'hsl(0, 84%, 60%)' },
+  { name: 'Kartu Tidak Terdaftar', value: 35, fill: 'hsl(35, 100%, 50%)' },
+  { name: 'Timeout Sensor', value: 15, fill: 'hsl(212, 100%, 48%)' },
+  { name: 'Kesalahan Perangkat', value: 5, fill: 'hsl(280, 100%, 60%)' },
 ]
 
 export const MOCK_REVENUE = [
-  { name: 'Mon', revenue: 1200000 },
-  { name: 'Tue', revenue: 1500000 },
-  { name: 'Wed', revenue: 1400000 },
-  { name: 'Thu', revenue: 1800000 },
-  { name: 'Fri', revenue: 2000000 },
+  { name: 'Sen', revenue: 1200000 },
+  { name: 'Sel', revenue: 1500000 },
+  { name: 'Rab', revenue: 1400000 },
+  { name: 'Kam', revenue: 1800000 },
+  { name: 'Jum', revenue: 2000000 },
 ]
 
 export const MOCK_VEHICLES_IN_OUT = [
-  { name: 'Mon', in: 1200, out: 1150 },
-  { name: 'Tue', in: 1500, out: 1420 },
-  { name: 'Wed', in: 1400, out: 1450 },
-  { name: 'Thu', in: 1800, out: 1750 },
-  { name: 'Fri', in: 2000, out: 1950 },
-  { name: 'Sat', in: 2200, out: 2100 },
-  { name: 'Sun', in: 2100, out: 2150 },
+  { name: 'Sen', in: 1200, out: 1150 },
+  { name: 'Sel', in: 1500, out: 1420 },
+  { name: 'Rab', in: 1400, out: 1450 },
+  { name: 'Kam', in: 1800, out: 1750 },
+  { name: 'Jum', in: 2000, out: 1950 },
+  { name: 'Sab', in: 2200, out: 2100 },
+  { name: 'Min', in: 2100, out: 2150 },
 ];
 
 export const MOCK_VEHICLES_INSIDE = [
@@ -52,21 +59,21 @@ export const MOCK_VEHICLES_INSIDE = [
 ];
 
 export const MOCK_AVG_SPEED = [
-  { name: 'Mon', speed: 85 },
-  { name: 'Tue', speed: 82 },
-  { name: 'Wed', speed: 84 },
-  { name: 'Thu', speed: 79 },
-  { name: 'Fri', speed: 75 },
-  { name: 'Sat', speed: 90 },
-  { name: 'Sun', speed: 92 },
+  { name: 'Sen', speed: 85 },
+  { name: 'Sel', speed: 82 },
+  { name: 'Rab', speed: 84 },
+  { name: 'Kam', speed: 79 },
+  { name: 'Jum', speed: 75 },
+  { name: 'Sab', speed: 90 },
+  { name: 'Min', speed: 92 },
 ];
 
 export const MOCK_TRAVEL_TIME = [
-  { name: 'Mon', time: 45 },
-  { name: 'Tue', time: 48 },
-  { name: 'Wed', time: 46 },
-  { name: 'Thu', time: 52 },
-  { name: 'Fri', time: 58 },
-  { name: 'Sat', time: 40 },
-  { name: 'Sun', time: 38 },
+  { name: 'Sen', time: 45 },
+  { name: 'Sel', time: 48 },
+  { name: 'Rab', time: 46 },
+  { name: 'Kam', time: 52 },
+  { name: 'Jum', time: 58 },
+  { name: 'Sab', time: 40 },
+  { name: 'Min', time: 38 },
 ];
