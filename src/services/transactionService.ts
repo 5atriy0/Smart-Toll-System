@@ -1,37 +1,16 @@
-/**
- * Transaction Service
- * Abstraksi data layer untuk transaksi tol.
- * Saat ini menggunakan mock data dari lib/constants.
- * Siap diganti dengan real API (Supabase, REST, dll) di masa depan.
- */
+import { supabase } from "@/services/supabaseClient";
 
-import { MOCK_TRANSACTIONS } from '@/lib/constants';
+export const getTransactions = async (limit: number = 10) => {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
-// -- Tipe Data --
-export interface Transaction {
-  id: string;
-  time: string;
-  rfid: string;
-  plate: string;
-  status: string;
-  loc: string;
-}
+  if (error) {
+    console.error(error);
+    return [];
+  }
 
-// -- Service Functions --
-
-export function getTransactions(): Transaction[] {
-  return MOCK_TRANSACTIONS;
-}
-
-export function getTransactionById(id: string): Transaction | undefined {
-  return MOCK_TRANSACTIONS.find((tx) => tx.id === id);
-}
-
-/**
- * Di masa depan, ganti implementasi di atas dengan:
- *
- * export async function getTransactions() {
- *   const { data } = await supabase.from('transactions').select('*').order('time', { ascending: false });
- *   return data;
- * }
- */
+  return data;
+};
