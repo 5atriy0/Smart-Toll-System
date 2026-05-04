@@ -1,9 +1,9 @@
 'use client';
 
-import { Bell, Search, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-export function Header() {
+export function Navbar() {
   const pathname = usePathname();
   
   // Format the pathname to a readable title
