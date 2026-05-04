@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 216 28% 7%;
+    --foreground: 210 40% 98%;
+
+    --card: 216 28% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --primary: 212 100% 48%; /* Electric Blue */
+    --primary-foreground: 210 40% 98%;
+
+    --success: 154 61% 43%; /* Emerald Green */
+    --success-foreground: 210 40% 98%;
+
+    --danger: 0 84% 60%;
+    --danger-foreground: 210 40% 98%;
+
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --border: 215 30% 18%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}

@@ -1,0 +1,62 @@
+// Login View Layout
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.bgOrb {
+  position: absolute;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 9999px;
+  filter: blur(128px);
+  pointer-events: none;
+
+  &.primary {
+    top: 25%;
+    left: 25%;
+    background-color: hsla(212, 100%, 48%, 0.2);
+  }
+
+  &.success {
+    bottom: 25%;
+    right: 25%;
+    background-color: hsla(154, 61%, 43%, 0.2);
+  }
+}
+
+.card {
+  width: 100%;
+  max-width: 28rem;
+  padding: 2rem;
+  position: relative;
+  z-index: 10;
+}
+
+.logoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.inputWrapper {
+  position: relative;
+}

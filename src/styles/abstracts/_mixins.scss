@@ -1,0 +1,109 @@
+// ==============================================
+// Reusable SCSS Mixins
+// ==============================================
+
+@use 'variables' as *;
+
+// -- Responsive Breakpoints --
+@mixin sm {
+  @media (min-width: $breakpoint-sm) { @content; }
+}
+
+@mixin md {
+  @media (min-width: $breakpoint-md) { @content; }
+}
+
+@mixin lg {
+  @media (min-width: $breakpoint-lg) { @content; }
+}
+
+@mixin xl {
+  @media (min-width: $breakpoint-xl) { @content; }
+}
+
+@mixin xxl {
+  @media (min-width: $breakpoint-2xl) { @content; }
+}
+
+// -- Flexbox Helpers --
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+// -- Card Glass Effect --
+@mixin card-glass($opacity: 0.4) {
+  background-color: rgba(hsl($card-h, $card-s, $card-l), $opacity);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(hsl($border-h, $border-s, $border-l), 0.5);
+  border-radius: $radius-lg;
+}
+
+// -- Truncate Text --
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// -- Smooth Transition --
+@mixin transition($properties: all, $duration: $transition-base) {
+  transition: $properties $duration;
+}
+
+// -- Scrollbar Styling --
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $color-muted;
+    border-radius: $radius-full;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: $color-muted-fg;
+  }
+}
+
+// -- Focus Ring --
+@mixin focus-ring($color: $color-primary) {
+  &:focus-visible {
+    outline: 2px solid $color;
+    outline-offset: 2px;
+  }
+}
+
+// -- Animate In (fade) --
+@mixin animate-fade-in($duration: $transition-slower) {
+  animation: fadeIn $duration ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
