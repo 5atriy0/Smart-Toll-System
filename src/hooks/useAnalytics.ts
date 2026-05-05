@@ -46,6 +46,16 @@ export const useAnalytics = () => {
   ];
 
 
+  const systemLogs = [
+    { time: '10:45:02', message: 'Gate A: Kendaraan terdeteksi' },
+    { time: '10:45:05', message: 'Gate A: Palang terbuka' },
+    { time: '10:45:08', message: 'Gate A: Palang tertutup' },
+    { time: '10:46:12', message: 'Gate B: RFID tidak valid' },
+    { time: '10:46:15', message: 'Gate B: Menunggu bantuan petugas' }
+  ];
+
+  const esp32Status = 'Online';
+
   return {
     trendData,
     todayMetrics: {
@@ -60,5 +70,7 @@ export const useAnalytics = () => {
       avgDuration,
     },
     recentAlerts, // 🔥 penting biar nggak error
+    systemLogs,
+    esp32Status,
   };
 };
