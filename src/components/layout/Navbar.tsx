@@ -8,7 +8,7 @@ export function Navbar() {
   
   // Format the pathname to a readable title
   const getPageTitle = () => {
-    if (pathname === '/') return 'Ringkasan Dasbor';
+    if (pathname === '/') return 'Ringkasan Dashboard';
     const path = pathname.split('/')[1];
     
     // Manual mapping for some paths

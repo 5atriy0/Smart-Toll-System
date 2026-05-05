@@ -17,5 +17,5 @@ export const calculateSpeed = (durationMin: number) => {
   const distanceKm = 2;
   const hours = durationMin / 60;
 
-  return durationMin > 0 ? (distanceKm / hours).toFixed(2) : 0;
+  return durationMin > 0 ? parseFloat((distanceKm / hours).toFixed(2)) : 0;
 };
