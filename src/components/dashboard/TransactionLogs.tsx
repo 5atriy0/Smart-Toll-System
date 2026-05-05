@@ -92,6 +92,8 @@ export function TransactionLogs() {
                 <th className="px-4 py-3">RFID</th>
                 <th className="px-4 py-3">Durasi</th>
                 <th className="px-4 py-3">Kecepatan</th>
+                <th className="px-4 py-3">Saldo</th>
+                <th className="px-4 py-3">Tarif</th>
                 <th className="px-4 py-3 rounded-tr-lg text-right">Status</th>
               </tr>
             </thead>
@@ -134,6 +136,15 @@ export function TransactionLogs() {
                     {tx.speed ? `${tx.speed} km/h` : "-"}
                   </td>
 
+                  {/* SALDO */}
+                  <td className="px-4 py-3 font-medium text-success">
+                    {tx.balance ? `Rp ${tx.balance.toLocaleString()}` : "-"}
+                  </td>
+
+                  {/* TARIF */}
+                  <td className="px-4 py-3 text-danger">
+                    {tx.tarif ? `Rp ${tx.tarif.toLocaleString()}` : "-"}
+                  </td>
                   {/* STATUS */}
                   <td className="px-4 py-3 text-right">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
@@ -154,7 +165,7 @@ export function TransactionLogs() {
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">
+                  <td colSpan={9} className="px-4 py-8 text-center text-muted-foreground">
                     Tidak ada transaksi yang cocok dengan pencarian Anda.
                   </td>
                 </tr>

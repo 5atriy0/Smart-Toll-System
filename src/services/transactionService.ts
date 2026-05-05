@@ -2,9 +2,9 @@ import { supabase } from "@/services/supabaseClient";
 
 export const getTransactions = async (limit: number = 10) => {
   const { data, error } = await supabase
-    .from("transactions")
+    .from("transaction_logs")
     .select("*")
-    .order("created_at", { ascending: false })
+    .order("tap_in_time", { ascending: false })
     .limit(limit);
 
   if (error) {

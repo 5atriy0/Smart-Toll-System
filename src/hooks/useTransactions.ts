@@ -19,10 +19,11 @@ export const useTransactions = () => {
       const data = await getTransactions(limit);
       if (!data) return;
 
-      // Sorting Descending (Terbaru ke terlama)
+      // 🔥 FIX: sorting pakai tap_in_time
       data.sort(
         (a: any, b: any) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          new Date(b.tap_in_time || b.created_at).getTime() -
+          new Date(a.tap_in_time || a.created_at).getTime()
       );
 
       const mapped = data.map((item: any) => {
@@ -37,11 +38,17 @@ export const useTransactions = () => {
         return {
           id: item.id,
           time: new Date(item.tap_in_time || item.created_at).toLocaleString(),
+
+          // 🔥 FIX PENTING
+          rawTime: item.tap_in_time || item.created_at,
+
           loc: `${item.gate_in || "-"} → ${item.gate_out || "-"}`,
           rfid: item.uid,
           plate: "-",
 
-          // Status Transaction
+          balance: item.saldo ?? item.balance ?? null,
+          tarif: item.tarif ?? null,
+
           status: item.tap_out_time
             ? "SELESAI"
             : item.tap_in_time
@@ -64,7 +71,6 @@ export const useTransactions = () => {
   useEffect(() => {
     fetchData();
 
-    // Ambil data Realtime
     const channel = supabase
       .channel("transactions")
       .on(
@@ -81,12 +87,12 @@ export const useTransactions = () => {
     };
   }, [limit]);
 
-  // Filter Tanggal
+  // 🔥 FIX TOTAL FILTER DATE
   const filterByDate = (logs: any[]) => {
     const now = new Date();
 
     return logs.filter((log) => {
-      const date = new Date(log.time);
+      const date = new Date(log.rawTime); // 🔥 FIX DI SINI
 
       if (dateRange === "Hari Ini") {
         return date.toDateString() === now.toDateString();
@@ -109,7 +115,6 @@ export const useTransactions = () => {
     });
   };
 
-  // Filterring
   const filteredLogs = filterByDate(logs).filter((log) =>
     (log.id?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
     (log.rfid?.toLowerCase() || "").includes(searchQuery.toLowerCase())
@@ -119,7 +124,7 @@ export const useTransactions = () => {
     console.log("Export:", type, filteredLogs);
   };
 
- return {
+  return {
     logs: filteredLogs,
     loading,
     limit,
