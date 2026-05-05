@@ -16,7 +16,7 @@ export function Sidebar() {
       </div>
 
       <nav className="w-full flex space-y-2 flex-col">
-        <NavItem icon={<LayoutDashboard size={20}/>} href="/" label="Dasbor" active={pathname === '/'} />
+        <NavItem icon={<LayoutDashboard size={20}/>} href="/" label="Dashboard" active={pathname === '/'} />
         <NavItem icon={<Users size={20}/>} href="/users" label="Manajemen Pengguna" active={pathname === '/users'} />
         <NavItem icon={<Activity size={20}/>} href="/transactions" label="Log Transaksi" active={pathname === '/transactions'} />
         <NavItem icon={<BarChart3 size={20}/>} href="/analytics" label="Analitik Big Data" active={pathname === '/analytics'} />

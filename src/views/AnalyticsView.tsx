@@ -4,9 +4,14 @@ import { AnalyticsOverview } from '@/components/dashboard/AnalyticsOverview'
 import { GateStatus } from '@/components/dashboard/GateStatus'
 import { LiveSensorFeed } from '@/components/dashboard/LiveSensorFeed'
 import { VisualIndicators } from '@/components/dashboard/VisualIndicators'
+import { useTransactions } from '@/hooks/useTransactions'
+import { useAnalytics } from '@/hooks/useAnalytics'
 import styles from './AnalyticsView.module.scss'
 
 export function AnalyticsView() {
+  const { logs } = useTransactions();
+  const { trendData } = useAnalytics();
+
   return (
     <div className={`space-y-6 animate-in fade-in duration-500 ${styles.container}`}>
       <div className="flex flex-col gap-2">
@@ -21,7 +26,7 @@ export function AnalyticsView() {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        <AnalyticsOverview />
+        <AnalyticsOverview trendData={trendData} />
       </div>
     </div>
   )

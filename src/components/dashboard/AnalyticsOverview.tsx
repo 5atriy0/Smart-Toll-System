@@ -1,12 +1,14 @@
 'use client';
 
 import { MOCK_VEHICLES_IN_OUT, MOCK_VEHICLES_INSIDE, MOCK_AVG_SPEED, MOCK_TRAVEL_TIME, MOCK_ANALYTICS_HOURLY, MOCK_SYSTEM_ERRORS } from '@/lib/constants';
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, LineChart, Line, AreaChart, Area, Legend, PieChart, Pie, Cell } from 'recharts';
 
-export function AnalyticsOverview() {
-  const { trendData } = useAnalytics();
+type Props = {
+  trendData: any[];
+}
+
+export function AnalyticsOverview({ trendData }: Props) {
 
   return (
     <Card className="col-span-1 border-primary/20">
