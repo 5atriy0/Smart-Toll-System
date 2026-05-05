@@ -9,8 +9,8 @@ import { useAnalytics } from '@/hooks/useAnalytics'
 import styles from './AnalyticsView.module.scss'
 
 export function AnalyticsView() {
-  const { logs } = useTransactions();
-  const { trendData } = useAnalytics();
+  const { logs = [] } = useTransactions();
+  const { trendData = [] } = useAnalytics();
 
   return (
     <div className={`space-y-6 animate-in fade-in duration-500 ${styles.container}`}>
