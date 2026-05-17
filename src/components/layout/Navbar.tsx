@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
@@ -16,6 +17,7 @@ export function Navbar() {
     if (path === 'transactions') return 'Log Transaksi';
     if (path === 'analytics') return 'Analitik Big Data';
     if (path === 'settings') return 'Pengaturan Sistem';
+    if (path === 'profile') return 'Profil Pengguna';
     
     return path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
   };
@@ -29,15 +31,15 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3 pl-6 border-l border-border/50">
+        <Link href="/profile" className="flex items-center gap-3 pl-6 border-l border-border/50 hover:opacity-80 transition-opacity">
           <div className="flex flex-col items-end hidden sm:flex">
             <span className="text-sm font-medium text-foreground">Admin</span>
             <span className="text-xs text-muted-foreground">Pengguna Super</span>
           </div>
-          <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
+          <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary hover:bg-primary/30 transition-colors">
             <User className="w-5 h-5" />
           </div>
-        </div>
+        </Link>
       </div>
     </header>
   );
