@@ -68,8 +68,8 @@ export const useAnalytics = () => {
 
       avgSpeed,
       avgDuration,
-    },
-    recentAlerts, // 🔥 penting biar nggak error
+    },    
+    recentAlerts, 
     systemLogs,
     esp32Status,
   };
