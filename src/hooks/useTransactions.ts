@@ -40,7 +40,8 @@ export const useTransactions = () => {
 
         return {
           id: item.id,
-          time: new Date(item.tap_in_time || item.created_at).toLocaleString(),
+          timeIn: new Date(item.tap_in_time || item.created_at).toLocaleString(),
+          timeOut: new Date(item.tap_out_time || item.created_at).toLocaleString(),
           rawTime: item.tap_in_time || item.created_at,
           loc: `${item.gate_in || "-"} → ${item.gate_out || "-"}`,
           rfid: item.uid,
@@ -52,8 +53,8 @@ export const useTransactions = () => {
           status: item.tap_out_time
             ? "SELESAI"
             : item.tap_in_time
-            ? "DI PERJALANAN"
-            : "BELUM MASUK",
+              ? "DI PERJALANAN"
+              : "BELUM MASUK",
 
           duration,
           speed,

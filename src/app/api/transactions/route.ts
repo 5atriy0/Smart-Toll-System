@@ -5,6 +5,7 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const { uid, gate_in, type } = body;
+  const tarif = 5000;
 
   //Tap Masuk
   if (type === "IN") {
@@ -19,6 +20,14 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "User tidak ditemukan" },
         { status: 404 }
+      );
+    }
+
+    // cek saldo
+    if (user.balance < tarif) {
+      return NextResponse.json(
+        { error: "Saldo tidak cukup" },
+        { status: 400 }
       );
     }
 
@@ -87,17 +96,6 @@ export async function POST(req: Request) {
         { status: 404 }
       );
     }
-
-    const tarif = 5000;
-
-    // cek saldo
-    if (user.balance < tarif) {
-      return NextResponse.json(
-        { error: "Saldo tidak cukup" },
-        { status: 400 }
-      );
-    }
-
     const newBalance = user.balance - tarif;
 
     // update saldo
@@ -132,7 +130,7 @@ export async function POST(req: Request) {
     });
   }
 
- //Invalid
+  //Invalid
   return NextResponse.json(
     { error: "Invalid type" },
     { status: 400 }
