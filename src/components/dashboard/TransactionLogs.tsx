@@ -131,12 +131,18 @@ export function TransactionLogs() {
 
                   {/* DURASI */}
                   <td className="px-4 py-3">
-                    {tx.duration ? `${tx.duration} menit` : "-"}
+                    {tx.duration !== null ? (
+                      tx.duration < 1 ? (
+                        tx.duration === 0 ? "0 detik" : `${Math.round(tx.duration * 60)} detik`
+                      ) : (
+                        `${Math.floor(tx.duration)} menit`
+                      )
+                    ) : "-"}
                   </td>
 
                   {/* SPEED */}
                   <td className="px-4 py-3">
-                    {tx.speed ? `${tx.speed} km/h` : "-"}
+                    {tx.speed !== null && tx.speed > 0 ? `${tx.speed} km/h` : "-"}
                   </td>
 
                   {/* SALDO */}

@@ -24,7 +24,7 @@ export const useAnalytics = () => {
 
 
   const completedLogs = logs.filter(
-    (l) => l.duration && l.speed
+    (l) => l.duration !== null && l.speed !== null && l.duration > 0
   );
 
   const avgSpeed =

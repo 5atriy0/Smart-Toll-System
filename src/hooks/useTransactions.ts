@@ -89,7 +89,6 @@ export const useTransactions = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions" },
         () => {
-          // debounce biar nggak spam
           clearTimeout(timeout);
           timeout = setTimeout(() => {
             fetchData();
@@ -134,9 +133,7 @@ export const useTransactions = () => {
     });
   };
 
-  // ===============================
-  // 🔥 FILTER FINAL
-  // ===============================
+  // Filter 
   const filteredLogs = filterByDate(logs).filter((log) =>
     (log.id?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
     (log.rfid?.toLowerCase() || "").includes(searchQuery.toLowerCase())
