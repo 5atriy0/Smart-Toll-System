@@ -1,0 +1,181 @@
+// Profile View Layout
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profileAvatar {
+  animation: slideInDown 0.5s ease-out;
+  
+  @keyframes slideInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.balanceCard {
+  animation: slideInLeft 0.5s ease-out 0.1s backwards;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: hsl(154, 61%, 43%);
+    background-color: hsl(154, 61%, 43%, 0.1);
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}
+
+.actionBtn {
+  animation: slideInUp 0.5s ease-out 0.2s backwards;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.infoField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  
+  label {
+    font-weight: 500;
+    opacity: 0.7;
+  }
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.rfidCard {
+  animation: fadeInUp 0.5s ease-out 0.3s backwards;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.vehicleCard {
+  animation: fadeInUp 0.5s ease-out 0.4s backwards;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.transactionsTable {
+  overflow-x: auto;
+  animation: fadeIn 0.5s ease-out 0.5s backwards;
+
+  table {
+    border-collapse: collapse;
+
+    thead {
+      background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    tbody tr {
+      transition: background-color 0.2s ease;
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    table {
+      font-size: 0.875rem;
+
+      th, td {
+        padding: 0.75rem 0.5rem !important;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 1024px) {
+  .container {
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    gap: 1rem;
+  }
+
+  .infoField {
+    padding: 0.25rem 0;
+  }
+}

@@ -6,13 +6,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// 2) duration (menit)
+// 2) duration (seconds)
 export const calculateDuration = (start: string, end: string) => {
   const diff = new Date(end).getTime() - new Date(start).getTime();
-  return Math.floor(diff / 60000); // menit
+  return Math.max(0, diff / 60000); // menit (float)
 };
 
-// 🔥 speed (km/h)
+// speed (km/h)
 export const calculateSpeed = (durationMin: number) => {
   const distanceKm = 2;
   const hours = durationMin / 60;
