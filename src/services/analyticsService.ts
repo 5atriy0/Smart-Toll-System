@@ -1,10 +1,3 @@
-/**
- * Analytics Service
- * Abstraksi data layer untuk analytics & sensor data.
- * Saat ini menggunakan mock data dari lib/constants.
- * Siap diganti dengan real API (Supabase, REST, dll) di masa depan.
- */
-
 import {
   MOCK_ANALYTICS_HOURLY,
   MOCK_ANALYTICS_RATIO,
