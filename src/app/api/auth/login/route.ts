@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   }
 
   const cookieStore = await cookies();
-  const maxAge = rememberMe ? 30 * 24 * 60 * 60 : 0; // 30 hari vs session
+  const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, {
               ...options,
-              maxAge,
+              ...(maxAge !== undefined ? { maxAge } : {}),
               secure: true,
               sameSite: 'lax',
               path: '/',
@@ -43,9 +43,8 @@ export async function POST(request: Request) {
     }, { status: 401 });
   }
 
-  // Flag cookie untuk client — baca cookie-nya untuk tau maxAge auth cookie
   cookieStore.set('remember_me', rememberMe ? 'true' : 'false', {
-    maxAge: rememberMe ? 30 * 24 * 60 * 60 : 0,
+    ...(maxAge !== undefined ? { maxAge } : {}),
     secure: true,
     sameSite: 'lax',
     path: '/',

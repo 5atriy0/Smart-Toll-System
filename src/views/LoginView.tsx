@@ -77,8 +77,10 @@ export function LoginView() {
   const isFormValid = email.includes('@') && password.length >= 3 && !isLoading;
 
   // ── Register ──
+  const [regCooldown, setRegCooldown] = useState(false);
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (regCooldown) return;
     setRegError(null);
 
     if (!regName.trim()) { setRegError('Nama wajib diisi'); return; }
@@ -91,20 +93,13 @@ export function LoginView() {
     setRegLoading(false);
 
     if (error) {
-      const msg = error.message.toLowerCase();
-      if (msg.includes('weak_password') || msg.includes('password should contain')) {
-        setRegError('Password terlalu lemah. Gunakan kombinasi huruf besar, huruf kecil, angka, dan simbol.');
-      } else if (error.message === 'User already registered') {
-        setRegError('Email sudah terdaftar');
-      } else if (msg.includes('rate_limit') || msg.includes('rate limit') || msg.includes('email rate')) {
-        setRegError('Terlalu banyak permintaan. Silakan coba lagi dalam beberapa menit.');
-      } else {
-        setRegError(error.message);
-      }
+      setRegError(error.message);
       return;
     }
 
     setRegSuccess(true);
+    setRegCooldown(true);
+    setTimeout(() => setRegCooldown(false), 5000);
   };
 
   // ── Forgot Password ──
@@ -397,7 +392,7 @@ export function LoginView() {
 
                   <button
                     type="submit"
-                    disabled={regLoading}
+                    disabled={regLoading || regCooldown}
                     className={styles.submitBtn}
                   >
                     {regLoading ? (

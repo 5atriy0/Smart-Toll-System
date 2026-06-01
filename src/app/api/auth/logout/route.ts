@@ -18,7 +18,7 @@ export async function POST() {
   const { error } = await supabase.auth.signOut();
 
   const cookieNames = cookieStore.getAll()
-    .filter(c => c.name.startsWith('sb-') || c.name === 'remember_me')
+    .filter(c => c.name.startsWith('sb-'))
     .map(c => c.name);
 
   for (const name of cookieNames) {

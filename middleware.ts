@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, {
               ...options,
-              maxAge: name.startsWith('sb-') ? maxAge : options.maxAge,
+              ...(name.startsWith('sb-') && maxAge !== undefined ? { maxAge } : {}),
               secure: true,
               sameSite: 'lax',
               path: '/',

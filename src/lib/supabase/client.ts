@@ -18,7 +18,7 @@ export function createClient() {
 
   return createBrowserClient(supabaseUrl, supabaseKey, {
     cookieOptions: {
-      maxAge,
+      ...(maxAge !== undefined ? { maxAge } : {}),
       secure: true,
       sameSite: 'lax',
       path: '/',

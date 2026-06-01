@@ -16,7 +16,7 @@ export async function GET() {
           cookiesToSet.forEach(({ name, value, options }) => {
             cookieStore.set(name, value, {
               ...options,
-              maxAge: name.startsWith('sb-') ? maxAge : options.maxAge,
+              ...(name.startsWith('sb-') && maxAge !== undefined ? { maxAge } : {}),
               path: '/',
             });
           });
