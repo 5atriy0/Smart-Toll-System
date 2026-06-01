@@ -1,8 +1,9 @@
 import { supabase } from "@/services/supabaseClient";
+import type { VwTransactionDetails } from "@/types/supabase";
 
 export const getTransactions = async (limit: number = 10) => {
   const { data, error } = await supabase
-    .from("transaction_logs")
+    .from("vw_transaction_details")
     .select("*")
     .order("tap_in_time", { ascending: false })
     .limit(limit);
@@ -12,5 +13,5 @@ export const getTransactions = async (limit: number = 10) => {
     return [];
   }
 
-  return data;
+  return data as VwTransactionDetails[];
 };

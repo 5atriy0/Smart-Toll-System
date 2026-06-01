@@ -1,0 +1,49 @@
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse, type NextRequest } from 'next/server';
+
+export async function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  const rememberMe = request.cookies.get('remember_me')?.value === 'true';
+  const maxAge = rememberMe ? 30 * 24 * 60 * 60 : undefined;
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll(); },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, {
+              ...options,
+              maxAge: name.startsWith('sb-') ? maxAge : options.maxAge,
+              secure: true,
+              sameSite: 'lax',
+              path: '/',
+            });
+          });
+        },
+      },
+    }
+  );
+
+  await supabase.auth.getUser();
+
+  if (rememberMe && request.cookies.get('remember_me')) {
+    response.cookies.set('remember_me', 'true', {
+      maxAge: 30 * 24 * 60 * 60,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+    });
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon\\.svg|favicon\\.ico|api/auth).*)',
+  ],
+};

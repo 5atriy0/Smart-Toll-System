@@ -1,45 +1,146 @@
 'use client';
 
-import Link from 'next/link';
-import { User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import Link from 'next/link';
+import { User, ChevronRight, UserCircle, LogOut } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
+import { useAuth } from '@/contexts/AuthContext';
+
+const PAGE_MAP: Record<string, string> = {
+  '/': 'Dashboard',
+  '/users': 'Pengguna',
+  '/transactions': 'Transaksi',
+  '/analytics': 'Analitik',
+  '/settings': 'Pengaturan',
+  '/profile': 'Profil',
+};
 
 export function Navbar() {
   const pathname = usePathname();
-  
-  // Format the pathname to a readable title
-  const getPageTitle = () => {
-    if (pathname === '/') return 'Ringkasan Dashboard';
-    const path = pathname.split('/')[1];
-    
-    // Manual mapping for some paths
-    if (path === 'users') return 'Manajemen Pengguna';
-    if (path === 'transactions') return 'Log Transaksi';
-    if (path === 'analytics') return 'Analitik Big Data';
-    if (path === 'settings') return 'Pengaturan Sistem';
-    if (path === 'profile') return 'Profil Pengguna';
-    
-    return path.charAt(0).toUpperCase() + path.slice(1).replace('-', ' ');
-  };
+  const { user, profile, signOut } = useAuth();
+  const [lastUpdated, setLastUpdated] = useState('baru saja');
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const update = () => setLastUpdated('baru saja');
+    const interval = setInterval(() => {
+      setLastUpdated((prev) => {
+        if (prev === 'baru saja') return '30 detik lalu';
+        if (prev === '30 detik lalu') return '1 menit lalu';
+        return prev;
+      });
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const segments = pathname.split('/').filter(Boolean);
+  const currentTitle = PAGE_MAP[pathname] || pathname.split('/').pop()?.replace(/-/g, ' ') || 'Dashboard';
 
   return (
-    <header className="h-16 border-b bg-card/40 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-8">
-      <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold text-foreground tracking-tight">
-          {getPageTitle()}
-        </h1>
+    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8">
+      {/* Left: Breadcrumb + last updated */}
+      <div className="flex flex-col gap-0.5">
+        <div className="flex items-center gap-1.5 text-sm">
+          <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-xs">
+            Dashboard
+          </Link>
+          {segments.map((seg, i) => {
+            const href = '/' + segments.slice(0, i + 1).join('/');
+            const label = PAGE_MAP[href] || seg.charAt(0).toUpperCase() + seg.slice(1);
+            const isLast = i === segments.length - 1;
+            return (
+              <span key={href} className="flex items-center gap-1.5">
+                <ChevronRight className="w-3 h-3 text-muted-foreground" />
+                {isLast ? (
+                  <span className="text-foreground font-medium text-xs">{label}</span>
+                ) : (
+                  <Link href={href} className="text-muted-foreground hover:text-foreground transition-colors text-xs">
+                    {label}
+                  </Link>
+                )}
+              </span>
+            );
+          })}
+        </div>
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold text-foreground tracking-tight">{currentTitle}</h1>
+          <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">
+            Diperbarui {lastUpdated}
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-6">
-        <Link href="/profile" className="flex items-center gap-3 pl-6 border-l border-border/50 hover:opacity-80 transition-opacity">
+      {/* Right: Theme toggle + Profile */}
+      <div className="flex items-center gap-4 relative" ref={dropdownRef}>
+        <ThemeToggle />
+        <button
+          onClick={() => setProfileOpen(!profileOpen)}
+          className="flex items-center gap-3 pl-4 border-l border-border hover:opacity-80 transition-opacity"
+        >
           <div className="flex flex-col items-end hidden sm:flex">
-            <span className="text-sm font-medium text-foreground">Admin</span>
-            <span className="text-xs text-muted-foreground">Pengguna Super</span>
+            <span className="text-sm font-medium text-foreground">{profile?.name || user?.email?.split('@')[0] || 'User'}</span>
+            <span className="text-xs text-muted-foreground">{profile?.role === 'ADMIN' ? 'Administrator' : 'Operator'}</span>
           </div>
-          <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary hover:bg-primary/30 transition-colors">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
             <User className="w-5 h-5" />
           </div>
-        </Link>
+        </button>
+
+        {/* Dropdown */}
+        {profileOpen && (
+          <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20 overflow-hidden z-50">
+            {/* User info */}
+            <div className="px-4 py-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                  <User className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{profile?.name || user?.email?.split('@')[0] || 'User'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{profile?.email || user?.email || ''}</p>
+                  <span className="inline-block mt-0.5 text-[10px] font-medium text-[hsl(var(--sidebar-active))] uppercase tracking-wider">
+                    {profile?.role === 'ADMIN' ? 'Administrator' : 'Operator'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu */}
+            <div className="p-1.5">
+              <Link
+                href="/profile"
+                onClick={() => setProfileOpen(false)}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-colors"
+              >
+                <UserCircle className="w-4 h-4" />
+                Profil
+              </Link>
+            </div>
+
+            {/* Logout */}
+            <div className="border-t border-border p-1.5">
+              <button
+                onClick={() => { setProfileOpen(false); signOut(); }}
+                className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-[#ef4444] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                Keluar
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );

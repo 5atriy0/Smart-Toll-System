@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { getTransactions } from "@/services/transactionService";
 import { supabase } from "@/services/supabaseClient";
-import { calculateDuration, calculateSpeed } from "@/lib/utils";
+import type { VwTransactionDetails } from "@/types/supabase";
 
 export const useTransactions = () => {
   const [logs, setLogs] = useState<any[]>([]);
@@ -12,9 +12,6 @@ export const useTransactions = () => {
   const [loading, setLoading] = useState(true);
   const [limit, setLimit] = useState(10);
 
-  // ===============================
-  // 🔥 FETCH DATA
-  // ===============================
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -22,42 +19,32 @@ export const useTransactions = () => {
       const data = await getTransactions(limit);
       if (!data) return;
 
-      // Sorting terbaru
-      data.sort(
-        (a: any, b: any) =>
-          new Date(b.tap_in_time || b.created_at).getTime() -
-          new Date(a.tap_in_time || a.created_at).getTime()
-      );
-
-      const mapped = data.map((item: any) => {
-        let duration = null;
-        let speed = null;
-
-        if (item.tap_in_time && item.tap_out_time) {
-          duration = calculateDuration(item.tap_in_time, item.tap_out_time);
-          speed = calculateSpeed(duration);
-        }
+      const mapped = data.map((item: VwTransactionDetails) => {
+        const statusLabel =
+          item.status === "COMPLETED"
+            ? "SELESAI"
+            : item.status === "IN_PROGRESS"
+              ? "DI PERJALANAN"
+              : "BELUM MASUK";
 
         return {
           id: item.id,
-          timeIn: new Date(item.tap_in_time || item.created_at).toLocaleString(),
-          timeOut: new Date(item.tap_out_time || item.created_at).toLocaleString(),
-          rawTime: item.tap_in_time || item.created_at,
-          loc: `${item.gate_in || "-"} → ${item.gate_out || "-"}`,
+          timeIn: new Date(item.tap_in_time).toLocaleString(),
+          timeOut: item.tap_out_time
+            ? new Date(item.tap_out_time).toLocaleString()
+            : "-",
+          rawTime: item.tap_in_time,
+          loc: `${item.gate_in_name || "-"} → ${item.gate_out_name || "-"}`,
           rfid: item.uid,
-          plate: "-",
+          plate: item.plate_number || "-",
 
-          balance: item.saldo ?? item.balance ?? null,
-          tarif: item.tarif ?? null,
+          balance: null,
+          tarif: item.fee ?? null,
 
-          status: item.tap_out_time
-            ? "SELESAI"
-            : item.tap_in_time
-              ? "DI PERJALANAN"
-              : "BELUM MASUK",
+          status: statusLabel,
 
-          duration,
-          speed,
+          duration: item.duration_minutes ?? null,
+          speed: item.average_speed ?? null,
         };
       });
 
@@ -69,16 +56,10 @@ export const useTransactions = () => {
     }
   };
 
-  // ===============================
-  // 🔥 FETCH BERDASARKAN LIMIT
-  // ===============================
   useEffect(() => {
     fetchData();
   }, [limit]);
 
-  // ===============================
-  // 🔥 REALTIME SUPABASE (FIXED)
-  // ===============================
   useEffect(() => {
     let timeout: any;
     const channelName = `transactions-realtime-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -103,9 +84,6 @@ export const useTransactions = () => {
     };
   }, []);
 
-  // ===============================
-  // 🔥 FILTER DATE
-  // ===============================
   const filterByDate = (logs: any[]) => {
     const now = new Date();
 
@@ -133,10 +111,10 @@ export const useTransactions = () => {
     });
   };
 
-  // Filter 
-  const filteredLogs = filterByDate(logs).filter((log) =>
-    (log.id?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-    (log.rfid?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+  const filteredLogs = filterByDate(logs).filter(
+    (log) =>
+      (log.id?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
+      (log.rfid?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   const exportData = (type: "csv" | "pdf") => {

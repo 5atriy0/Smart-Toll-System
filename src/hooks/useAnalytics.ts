@@ -1,76 +1,82 @@
-import { useTransactions } from './useTransactions';
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  getDashboardStats,
+  getHourlyAnalytics,
+  getRevenue,
+  getVehiclesInOut,
+  getAvgSpeed,
+  getTravelTime,
+} from "@/services/analyticsService";
+import type { DashboardStats } from "@/types/supabase";
 
 export const useAnalytics = () => {
-  const { logs } = useTransactions();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [hourlyData, setHourlyData] = useState<any[]>([]);
+  const [vehiclesInOut, setVehiclesInOut] = useState<any[]>([]);
+  const [avgSpeed, setAvgSpeed] = useState<any[]>([]);
+  const [travelTime, setTravelTime] = useState<any[]>([]);
 
-  const grouped: Record<string, { vehicles: number; revenue: number }> = {};
+  useEffect(() => {
+    const fetchAll = async () => {
+      const [s, rev, hourly, vInOut, speed, travel] = await Promise.all([
+        getDashboardStats(),
+        getRevenue(),
+        getHourlyAnalytics(),
+        getVehiclesInOut(),
+        getAvgSpeed(),
+        getTravelTime(),
+      ]);
 
-  logs.forEach((log) => {
-    const date = new Date(log.rawTime).toLocaleDateString();
+      setStats(s);
+      setTrendData(Array.isArray(rev) ? rev : []);
+      setHourlyData(Array.isArray(hourly) ? hourly : []);
+      setVehiclesInOut(Array.isArray(vInOut) ? vInOut : []);
+      setAvgSpeed(Array.isArray(speed) ? speed : []);
+      setTravelTime(Array.isArray(travel) ? travel : []);
+    };
 
-    if (!grouped[date]) {
-      grouped[date] = { vehicles: 0, revenue: 0 };
-    }
+    fetchAll();
+  }, []);
 
-    grouped[date].vehicles += 1;
-    grouped[date].revenue += log.tarif || 0;
-  });
+  const todayMetrics = {
+    totalVehicles: stats?.total_transactions ?? 0,
+    vehiclesTrend: "+0%",
+    revenue: stats?.today_revenue ?? 0,
+    revenueTrend: "+0%",
+    activeUsers: stats?.total_users ?? 0,
+    usersTrend: "+0",
+    avgSpeed:
+      avgSpeed.length > 0
+        ? avgSpeed.reduce((acc: number, d: any) => acc + d.speed, 0) /
+          avgSpeed.length
+        : 0,
+    avgDuration:
+      travelTime.length > 0
+        ? travelTime.reduce((acc: number, d: any) => acc + d.time, 0) /
+          travelTime.length
+        : 0,
+  };
 
-  const trendData = Object.keys(grouped).map((date) => ({
-    date,
-    vehicles: grouped[date].vehicles,
-    revenue: grouped[date].revenue,
-  }));
-
-
-  const completedLogs = logs.filter(
-    (l) => l.duration !== null && l.speed !== null && l.duration > 0
-  );
-
-  const avgSpeed =
-    completedLogs.length > 0
-      ? completedLogs.reduce((acc, l) => acc + (l.speed || 0), 0) /
-        completedLogs.length
-      : 0;
-
-  const avgDuration =
-    completedLogs.length > 0
-      ? completedLogs.reduce((acc, l) => acc + (l.duration || 0), 0) /
-        completedLogs.length
-      : 0;
-      
   const recentAlerts = [
-    { id: 1, type: 'warning', message: 'Sensor delay di Gate A', time: '5 mnt lalu' },
-    { id: 2, type: 'error', message: 'RFID gagal terbaca', time: '10 mnt lalu' },
-    { id: 3, type: 'info', message: 'Sistem berjalan normal', time: '1 jam lalu' },
+    { id: 1, type: "info" as const, message: "Sistem berjalan normal", time: "1 jam lalu" },
   ];
-
 
   const systemLogs = [
-    { time: '10:45:02', message: 'Gate A: Kendaraan terdeteksi' },
-    { time: '10:45:05', message: 'Gate A: Palang terbuka' },
-    { time: '10:45:08', message: 'Gate A: Palang tertutup' },
-    { time: '10:46:12', message: 'Gate B: RFID tidak valid' },
-    { time: '10:46:15', message: 'Gate B: Menunggu bantuan petugas' }
+    { time: new Date().toLocaleTimeString(), message: "Sistem aktif" },
   ];
-
-  const esp32Status = 'Online';
 
   return {
     trendData,
-    todayMetrics: {
-      totalVehicles: logs.length,
-      vehiclesTrend: '+8%',
-      revenue: logs.reduce((acc, l) => acc + (l.tarif || 0), 0),
-      revenueTrend: '+12%',
-      activeUsers: new Set(logs.map((l) => l.rfid)).size,
-      usersTrend: '+5',
-
-      avgSpeed,
-      avgDuration,
-    },    
-    recentAlerts, 
+    hourlyData,
+    vehiclesInOut,
+    avgSpeed,
+    travelTime,
+    todayMetrics,
+    recentAlerts,
     systemLogs,
-    esp32Status,
+    esp32Status: "Online" as const,
   };
 };
