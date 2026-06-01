@@ -1,42 +1,53 @@
-/**
- * User Service
- * Abstraksi data layer untuk manajemen pengguna & RFID.
- * Saat ini menggunakan mock data dari lib/constants.
- * Siap diganti dengan real API (Supabase, REST, dll) di masa depan.
- */
+import { supabase } from "@/services/supabaseClient";
+import type {
+  VwUserDetails,
+  CreateUserWithCardParams,
+  CardStatus,
+} from "@/types/supabase";
 
-import { MOCK_USERS } from '@/lib/constants';
+export const getUsers = async (): Promise<VwUserDetails[]> => {
+  const { data, error } = await supabase
+    .from("vw_user_details")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-// -- Tipe Data --
-export interface User {
-  name: string;
-  plateNumber: string;
-  rfid: string;
-  balance: string;
-  status: string;
-  role: string;
-}
+  if (error) {
+    console.error("getUsers error:", error);
+    return [];
+  }
 
-// -- Service Functions --
+  return data as VwUserDetails[];
+};
 
-export function getUsers(): User[] {
-  return MOCK_USERS;
-}
+export const topUp = async (
+  cardUid: string,
+  amount: number,
+  adminId: string
+) => {
+  const { error } = await supabase.rpc("top_up", {
+    p_card_uid: cardUid,
+    p_amount: amount,
+    p_method: "ADMIN",
+    p_created_by: adminId,
+  });
+  return { error };
+};
 
-export function getUserByRfid(rfid: string): User | undefined {
-  return MOCK_USERS.find((user) => user.rfid === rfid);
-}
+export const createUser = async (params: CreateUserWithCardParams) => {
+  const { data, error } = await supabase.rpc(
+    "create_user_with_card",
+    params
+  );
+  return { data, error };
+};
 
-/**
- * Di masa depan, ganti implementasi di atas dengan:
- *
- * export async function getUsers() {
- *   const { data } = await supabase.from('users').select('*');
- *   return data;
- * }
- *
- * export async function updateUserBalance(rfid: string, amount: number) {
- *   const { data } = await supabase.from('users').update({ balance: amount }).eq('rfid', rfid);
- *   return data;
- * }
- */
+export const updateCardStatus = async (
+  cardUid: string,
+  status: CardStatus
+) => {
+  const { error } = await supabase.rpc("update_card_status", {
+    p_card_uid: cardUid,
+    p_status: status,
+  });
+  return { error };
+};

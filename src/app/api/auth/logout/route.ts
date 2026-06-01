@@ -1,0 +1,33 @@
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { NextResponse } from 'next/server';
+
+export async function POST() {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() { return cookieStore.getAll(); },
+        setAll() {},
+      },
+    }
+  );
+
+  const { error } = await supabase.auth.signOut();
+
+  const cookieNames = cookieStore.getAll()
+    .filter(c => c.name.startsWith('sb-'))
+    .map(c => c.name);
+
+  for (const name of cookieNames) {
+    cookieStore.set(name, '', { maxAge: 0, path: '/' });
+  }
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}

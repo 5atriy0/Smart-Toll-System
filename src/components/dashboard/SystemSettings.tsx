@@ -2,19 +2,47 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Settings, Save, Server, Shield, Wrench, Key, Clock, AlertTriangle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { loadSettings, updateSetting } from '@/services/settingsService';
+import { useToast } from '@/contexts/ToastContext';
 
 export function SystemSettings() {
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [loaded, setLoaded] = useState(false);
 
-  const handleSave = () => {
+  useEffect(() => {
+    loadSettings().then((s) => {
+      setSettings(s);
+      setLoaded(true);
+    });
+  }, []);
+
+  const handleSave = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
-      alert('Pengaturan berhasil disimpan!');
-    }, 1000);
+    const keys = Object.keys(settings);
+    const results = await Promise.all(
+      keys.map((k) => updateSetting(k, settings[k]))
+    );
+    if (results.every(Boolean)) {
+      toast('Pengaturan berhasil disimpan!', 'success');
+    } else {
+      toast('Gagal menyimpan beberapa pengaturan.', 'error');
+    }
+    setIsSaving(false);
   };
+
+  if (!loaded) {
+    return (
+      <Card className="col-span-1 border-primary/20">
+        <CardContent className="p-8 text-center text-muted-foreground animate-pulse">
+          Memuat pengaturan...
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="col-span-1 border-primary/20">
@@ -39,48 +67,86 @@ export function SystemSettings() {
       
       <CardContent className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-8">
         
-        {/* API Settings */}
+        {/* Pricing Settings */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Server className="w-4 h-4" />
-            Konektivitas & API Perangkat
+            Tarif Tol per Kendaraan
           </h3>
           <div className="space-y-4 bg-background/50 p-4 rounded-xl border border-border/50">
             <div>
-              <label className="text-xs font-medium text-foreground block mb-1">URL Endpoint API</label>
-              <input type="text" defaultValue="https://api.smart-toll.local/v1/gate" className="w-full bg-card/50 border border-border rounded-md px-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors" />
-            </div>
-            
-            <div>
-              <label className="text-xs font-medium text-foreground block mb-1 flex items-center gap-1">
-                <Key className="w-3 h-3" /> Secret Key
-              </label>
+              <label className="text-xs font-medium text-foreground block mb-1">Mobil (CAR_FEE)</label>
               <div className="relative">
-                <input type="password" defaultValue="secret_key_12345" className="w-full bg-card/50 border border-border rounded-md px-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono" />
+                <span className="absolute left-3 top-2 text-sm text-muted-foreground">Rp</span>
+                <input
+                  type="number"
+                  value={settings.CAR_FEE || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, CAR_FEE: e.target.value }))}
+                  step="1000"
+                  className="w-full bg-card/50 border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono"
+                />
               </div>
             </div>
-
             <div>
-              <label className="text-xs font-medium text-foreground block mb-1 flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Timeout Sensor (ms)
-              </label>
-              <input type="number" defaultValue="5000" min="1000" step="500" className="w-full bg-card/50 border border-border rounded-md px-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors" />
+              <label className="text-xs font-medium text-foreground block mb-1">Pickup (PICKUP_FEE)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-sm text-muted-foreground">Rp</span>
+                <input
+                  type="number"
+                  value={settings.PICKUP_FEE || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, PICKUP_FEE: e.target.value }))}
+                  step="1000"
+                  className="w-full bg-card/50 border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-foreground block mb-1">Minibus (MINIBUS_FEE)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-sm text-muted-foreground">Rp</span>
+                <input
+                  type="number"
+                  value={settings.MINIBUS_FEE || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, MINIBUS_FEE: e.target.value }))}
+                  step="1000"
+                  className="w-full bg-card/50 border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-foreground block mb-1">Bus (BUS_FEE)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-2 text-sm text-muted-foreground">Rp</span>
+                <input
+                  type="number"
+                  value={settings.BUS_FEE || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, BUS_FEE: e.target.value }))}
+                  step="1000"
+                  className="w-full bg-card/50 border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Security & Pricing */}
+        {/* Operational Settings */}
         <div className="space-y-4">
           <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Shield className="w-4 h-4" />
-            Harga & Mode Operasional
+            Pengaturan Operasional
           </h3>
           <div className="space-y-4 bg-background/50 p-4 rounded-xl border border-border/50">
             <div>
-              <label className="text-xs font-medium text-foreground block mb-1">Tarif Tol (Potongan Saldo)</label>
+              <label className="text-xs font-medium text-foreground block mb-1">Saldo Minimum (MINIMUM_BALANCE)</label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-sm text-muted-foreground">Rp</span>
-                <input type="number" defaultValue="15000" step="1000" className="w-full bg-card/50 border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono" />
+                <input
+                  type="number"
+                  value={settings.MINIMUM_BALANCE || ''}
+                  onChange={(e) => setSettings((s) => ({ ...s, MINIMUM_BALANCE: e.target.value }))}
+                  step="5000"
+                  className="w-full bg-card/50 border border-border rounded-md pl-9 pr-3 py-2 text-sm focus:border-primary/50 outline-none transition-colors font-mono"
+                />
               </div>
             </div>
             
@@ -96,7 +162,6 @@ export function SystemSettings() {
                   </p>
                 </div>
                 
-                {/* Toggle Switch */}
                 <button
                   onClick={() => setMaintenanceMode(!maintenanceMode)}
                   className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${maintenanceMode ? 'bg-warning' : 'bg-muted'}`}

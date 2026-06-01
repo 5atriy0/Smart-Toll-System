@@ -1,38 +1,25 @@
-// ==============================================
-// Minimal CSS Reset
-// Kompatibel dengan Tailwind CSS base layer
-// ==============================================
-
-// Hanya menambahkan reset yang TIDAK di-handle oleh Tailwind
-// Tailwind sudah menangani box-sizing, margin/padding reset, dll.
-
-// Smooth scrolling
 html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-// Remove default button styles
 button {
   cursor: pointer;
   font: inherit;
 }
 
-// Remove default input styles
 input,
 select,
 textarea {
   font: inherit;
 }
 
-// Remove default list styles (jika dibutuhkan)
 ul,
 ol {
   list-style: none;
 }
 
-// Improve media defaults
 img,
 picture,
 video,
@@ -42,20 +29,17 @@ svg {
   max-width: 100%;
 }
 
-// Remove default table spacing
 table {
   border-collapse: collapse;
   border-spacing: 0;
 }
 
-// Focus visible for accessibility
 :focus-visible {
-  outline: 2px solid hsl(212, 100%, 48%);
+  outline: 2px solid hsl(var(--accent));
   outline-offset: 2px;
 }
 
-// Selection styling
 ::selection {
-  background-color: hsla(212, 100%, 48%, 0.3);
-  color: hsl(210, 40%, 98%);
+  background-color: hsla(215, 52%, 22%, 0.15);
+  color: inherit;
 }

@@ -1,136 +1,196 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Mail, Phone, MapPin, FileText, LogOut, Activity } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import styles from './ProfileView.module.scss'
+import { Mail, FileText, Shield, Calendar, Edit3, Save, X, Loader2 } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import { updateProfile } from '@/services/profileService'
+import { useToast } from '@/contexts/ToastContext'
 
 export function ProfileView() {
-  const router = useRouter();
-  
-  // Admin profile data
-  const adminUser = {
-    name: 'Admin',
-    email: 'admin@smarttoll.com',
-    phone: '+62 812 3456 7890',
-    location: 'Jakarta Timur',
-    role: 'Pengguna Super',
-    status: 'Active',
-    joinDate: '01 Januari 2024'
+  const { user, profile, refreshProfile } = useAuth();
+  const { toast } = useToast();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(profile?.name || '');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const joined = profile?.created_at
+    ? new Date(profile.created_at).toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '-';
+
+  const handleSave = async () => {
+    if (!user) return;
+    if (!name.trim()) { setError('Nama tidak boleh kosong'); return; }
+
+    setSaving(true);
+    setError(null);
+
+    const { error: err } = await updateProfile(user.id, { name: name.trim() });
+
+    if (err) {
+      setError(err.message);
+      setSaving(false);
+      return;
+    }
+
+    await refreshProfile();
+    setSaving(false);
+    setEditing(false);
+    toast('Profil berhasil diperbarui', 'success');
   };
 
-  const handleLogout = () => {
-    router.push('/login');
+  const handleCancel = () => {
+    setName(profile?.name || '');
+    setError(null);
+    setEditing(false);
   };
 
   return (
-    <div className={`space-y-6 animate-in fade-in duration-500 ${styles.container}`}>
-      {/* Header Section */}
-      <div className="flex flex-col gap-2 mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Profil Admin</h1>
-        <p className="text-muted-foreground text-sm">Kelola informasi akun admin dan pengaturan sistem.</p>
-      </div>
-
+    <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Profile Card */}
+        {/* Profile Card */}
         <div className="lg:col-span-1">
-          <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden">
+          <Card className="border-border shadow-sm overflow-hidden" style={{ borderLeft: '3px solid hsl(var(--accent))' }}>
             <CardHeader className="pb-4">
               <div className="flex flex-col items-center gap-4">
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center border-4 border-primary/20 ${styles.profileAvatar}`}>
-                  <span className="text-3xl font-bold text-primary-foreground">
-                    A
+                <div className="w-20 h-20 rounded-full flex items-center justify-center border-4 border-accent/20"
+                  style={{ backgroundColor: 'hsl(var(--primary))' }}>
+                  <span className="text-3xl font-bold text-white">
+                    {(profile?.name || user?.email || 'U').charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div className="text-center">
-                  <h2 className="text-xl font-bold text-foreground">{adminUser.name}</h2>
+                  <h2 className="text-lg font-bold text-foreground">{profile?.name || user?.email?.split('@')[0] || 'User'}</h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mt-1">
-                    <span className={`w-2 h-2 rounded-full ${adminUser.status === 'Active' ? 'bg-success' : 'bg-destructive'}`} />
-                    {adminUser.role}
+                    <span className="w-2 h-2 rounded-full bg-success" />
+                    {profile?.role === 'ADMIN' ? 'Administrator' : 'Operator'}
                   </p>
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {/* Status Info */}
-              <div className={`p-4 rounded-lg bg-background/50 border border-success/20 ${styles.statusCard}`}>
+              <div className="p-4 rounded-lg bg-muted/30 border border-border">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-success" />
-                    Status Sistem
+                    <Shield className="w-4 h-4 text-success" />
+                    Status
                   </span>
-                  <span className="text-sm font-bold text-success">{adminUser.status}</span>
+                  <span className="text-sm font-bold text-success">Aktif</span>
                 </div>
               </div>
 
-              {/* Quick Stats */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-background/50 border border-border/50 text-center">
-                  <p className="text-xs text-muted-foreground mb-1">Bergabung</p>
-                  <p className="text-sm font-bold text-foreground">{adminUser.joinDate}</p>
+                <div className="p-3 rounded-lg bg-muted/30 border border-border text-center">
+                  <p className="text-xs text-muted-foreground mb-1 flex items-center justify-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    Bergabung
+                  </p>
+                  <p className="text-sm font-bold text-foreground">{joined}</p>
                 </div>
-                <div className="p-3 rounded-lg bg-background/50 border border-border/50 text-center">
+                <div className="p-3 rounded-lg bg-muted/30 border border-border text-center">
                   <p className="text-xs text-muted-foreground mb-1">Role</p>
-                  <p className="text-sm font-bold text-primary">Admin</p>
+                  <p className="text-sm font-bold text-primary">{profile?.role === 'ADMIN' ? 'Admin' : 'User'}</p>
                 </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-1 gap-2 pt-4">
-                <button onClick={handleLogout} className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg border border-border bg-background hover:bg-muted transition-colors text-sm font-medium text-foreground ${styles.actionBtn}`}>
-                  <LogOut className="w-4 h-4" />
-                  Keluar
-                </button>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Right Column - Detailed Information */}
+        {/* Info */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Account Information */}
-          <Card className="border-border/50">
+          <Card className="border-border shadow-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-primary" />
-                Informasi Akun Admin
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className={styles.infoField}>
-                  <label className="text-sm text-muted-foreground mb-2 block">Nama</label>
-                  <p className="text-foreground font-medium">{adminUser.name}</p>
-                </div>
-                <div className={styles.infoField}>
-                  <label className="text-sm text-muted-foreground mb-2 block">Email</label>
-                  <p className="text-foreground font-medium flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
-                    {adminUser.email}
-                  </p>
-                </div>
-                <div className={styles.infoField}>
-                  <label className="text-sm text-muted-foreground mb-2 block">Nomor Telepon</label>
-                  <p className="text-foreground font-medium flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-primary" />
-                    {adminUser.phone}
-                  </p>
-                </div>
-                <div className={styles.infoField}>
-                  <label className="text-sm text-muted-foreground mb-2 block">Lokasi</label>
-                  <p className="text-foreground font-medium flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" />
-                    {adminUser.location}
-                  </p>
-                </div>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-accent" />
+                  Informasi Akun
+                </CardTitle>
+                {!editing && (
+                  <button
+                    onClick={() => { setName(profile?.name || ''); setEditing(true); setError(null); }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white transition-colors"
+                    style={{ backgroundColor: 'hsl(var(--sidebar-active))' }}
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    Edit
+                  </button>
+                )}
               </div>
+            </CardHeader>
+            <CardContent>
+              {editing ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1.5 block">Nama</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 transition-colors"
+                      style={{ focusRingColor: 'hsl(var(--accent))' }}
+                      placeholder="Masukkan nama"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-1.5 block">Email</label>
+                    <input
+                      type="email"
+                      value={profile?.email || user?.email || ''}
+                      disabled
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-muted/50 text-muted-foreground text-sm cursor-not-allowed"
+                    />
+                    <p className="text-[11px] text-muted-foreground/60 mt-1">Email tidak dapat diubah</p>
+                  </div>
+
+                  {error && (
+                    <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2">{error}</p>
+                  )}
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors disabled:opacity-50"
+                      style={{ backgroundColor: 'hsl(var(--sidebar-active))' }}
+                    >
+                      {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                      Simpan
+                    </button>
+                    <button
+                      onClick={handleCancel}
+                      disabled={saving}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground border border-border hover:bg-muted transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      Batal
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-2 block">Nama</label>
+                    <p className="text-foreground font-medium">{profile?.name || user?.email?.split('@')[0] || 'User'}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm text-muted-foreground mb-2 block">Email</label>
+                    <p className="text-foreground font-medium flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-primary" />
+                      {profile?.email || user?.email || '-'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-
-
         </div>
       </div>
     </div>
-  )
+  );
 }
