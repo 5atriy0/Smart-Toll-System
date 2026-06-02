@@ -41,7 +41,7 @@ export const useAnalytics = () => {
   useEffect(() => {
     fetchAll();
 
-    let timeout: any;
+    let realtimeTimeout: any;
     const channelName = `analytics-rt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     const channel = supabase
@@ -50,14 +50,23 @@ export const useAnalytics = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions" },
         () => {
-          clearTimeout(timeout);
-          timeout = setTimeout(fetchAll, 300);
+          clearTimeout(realtimeTimeout);
+          realtimeTimeout = setTimeout(fetchAll, 300);
         }
       )
       .subscribe();
 
+    const pollInterval = setInterval(fetchAll, 5000);
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fetchAll();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(realtimeTimeout);
+      clearInterval(pollInterval);
+      document.removeEventListener("visibilitychange", onVisibility);
       supabase.removeChannel(channel);
     };
   }, []);

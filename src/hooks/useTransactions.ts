@@ -5,6 +5,11 @@ import { getTransactions } from "@/services/transactionService";
 import { supabase } from "@/services/supabaseClient";
 import type { VwTransactionDetails } from "@/types/supabase";
 
+const parseUTC = (ts: string | null) => {
+  if (!ts) return null;
+  return new Date(ts.endsWith("Z") || ts.includes("+") ? ts : ts + "Z");
+};
+
 export const useTransactions = () => {
   const [logs, setLogs] = useState<any[]>([]);
   const [dateRange, setDateRange] = useState("Hari Ini");
@@ -27,12 +32,13 @@ export const useTransactions = () => {
               ? "DI PERJALANAN"
               : "BELUM MASUK";
 
+        const tapInDate = parseUTC(item.tap_in_time);
+        const tapOutDate = parseUTC(item.tap_out_time);
+
         return {
           id: item.id,
-          timeIn: new Date(item.tap_in_time).toLocaleString(),
-          timeOut: item.tap_out_time
-            ? new Date(item.tap_out_time).toLocaleString()
-            : "-",
+          timeIn: tapInDate?.toLocaleString() ?? "-",
+          timeOut: tapOutDate?.toLocaleString() ?? "-",
           rawTime: item.tap_in_time,
           loc: `${item.gate_in_name || "-"} → ${item.gate_out_name || "-"}`,
           rfid: item.uid,
@@ -61,8 +67,8 @@ export const useTransactions = () => {
   }, [limit]);
 
   useEffect(() => {
-    let timeout: any;
-    const channelName = `transactions-realtime-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    let realtimeTimeout: any;
+    const channelName = `transactions-rt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
     const channel = supabase
       .channel(channelName)
@@ -70,25 +76,34 @@ export const useTransactions = () => {
         "postgres_changes",
         { event: "*", schema: "public", table: "transactions" },
         () => {
-          clearTimeout(timeout);
-          timeout = setTimeout(() => {
-            fetchData();
-          }, 300);
+          clearTimeout(realtimeTimeout);
+          realtimeTimeout = setTimeout(fetchData, 300);
         }
       )
       .subscribe();
 
+    // Polling fallback every 5 detik
+    const pollInterval = setInterval(fetchData, 5000);
+
+    // Refresh saat tab kembali aktif
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") fetchData();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
     return () => {
-      clearTimeout(timeout);
+      clearTimeout(realtimeTimeout);
+      clearInterval(pollInterval);
+      document.removeEventListener("visibilitychange", onVisibility);
       supabase.removeChannel(channel);
     };
   }, []);
 
   const filterByDate = (logs: any[]) => {
-    const now = new Date();
-
     return logs.filter((log) => {
-      const date = new Date(log.rawTime);
+      const date = parseUTC(log.rawTime);
+      const now = new Date();
+      if (!date) return false;
 
       if (dateRange === "Hari Ini") {
         return date.toDateString() === now.toDateString();
