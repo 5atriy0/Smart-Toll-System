@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/services/supabaseClient";
 import {
   getDashboardStats,
   getHourlyAnalytics,
@@ -40,35 +39,6 @@ export const useAnalytics = () => {
 
   useEffect(() => {
     fetchAll();
-
-    let realtimeTimeout: any;
-    const channelName = `analytics-rt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "transactions" },
-        () => {
-          clearTimeout(realtimeTimeout);
-          realtimeTimeout = setTimeout(fetchAll, 300);
-        }
-      )
-      .subscribe();
-
-    const pollInterval = setInterval(fetchAll, 5000);
-
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") fetchAll();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
-    return () => {
-      clearTimeout(realtimeTimeout);
-      clearInterval(pollInterval);
-      document.removeEventListener("visibilitychange", onVisibility);
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const todayMetrics = {

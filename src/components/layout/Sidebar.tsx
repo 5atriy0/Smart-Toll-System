@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, href: '/', label: 'Dashboard' },
+  { icon: LayoutDashboard, href: '/dashboard', label: 'Dashboard' },
   { icon: Users, href: '/users', label: 'Pengguna' },
   { icon: Activity, href: '/transactions', label: 'Transaksi' },
   { icon: BarChart3, href: '/analytics', label: 'Analitik' },
@@ -34,7 +34,7 @@ export function Sidebar() {
         }`}
         style={{ backgroundColor: 'hsl(var(--sidebar-bg))' }}
       >
-        {/* Logo + Toggle */}
+        {/* Logo */}
         <div className={`flex items-center h-16 px-4 border-b border-white/10 ${collapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'hsl(var(--sidebar-active))' }}>
             <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
@@ -45,23 +45,7 @@ export function Sidebar() {
             </svg>
           </div>
           {!collapsed && (
-            <>
-              <span className="font-bold text-sm tracking-widest text-white/90 uppercase">Tollytics</span>
-              <button
-                onClick={() => setCollapsed(true)}
-                className="ml-auto flex items-center justify-center w-7 h-7 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/5 transition-colors"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-            </>
-          )}
-          {collapsed && (
-            <button
-              onClick={() => setCollapsed(false)}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center text-white/60 hover:text-white bg-[#1a2d47] border border-white/10 shadow-md transition-colors z-10"
-            >
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+            <span className="font-bold text-sm tracking-widest text-white/90 uppercase">Tollytics</span>
           )}
         </div>
 
@@ -97,6 +81,26 @@ export function Sidebar() {
             );
           })}
         </nav>
+
+        {/* Collapse / Expand button */}
+        <div className="px-2 py-2 border-t border-white/10">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5 ${
+              collapsed ? 'justify-center' : ''
+            }`}
+            title={collapsed ? 'Perluas' : 'Sembunyikan'}
+          >
+            {collapsed ? (
+              <ChevronRight className="w-5 h-5" />
+            ) : (
+              <>
+                <ChevronLeft className="w-5 h-5" />
+                <span className="text-sm whitespace-nowrap">Sembunyikan</span>
+              </>
+            )}
+          </button>
+        </div>
 
         {/* Footer */}
         <div className={`px-4 py-3 border-t border-white/10 ${collapsed ? 'flex justify-center' : ''}`}>

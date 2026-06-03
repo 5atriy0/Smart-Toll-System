@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { getTransactions } from "@/services/transactionService";
-import { supabase } from "@/services/supabaseClient";
 import type { VwTransactionDetails } from "@/types/supabase";
 
 const parseUTC = (ts: string | null) => {
@@ -65,39 +64,6 @@ export const useTransactions = () => {
   useEffect(() => {
     fetchData();
   }, [limit]);
-
-  useEffect(() => {
-    let realtimeTimeout: any;
-    const channelName = `transactions-rt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "transactions" },
-        () => {
-          clearTimeout(realtimeTimeout);
-          realtimeTimeout = setTimeout(fetchData, 300);
-        }
-      )
-      .subscribe();
-
-    // Polling fallback every 5 detik
-    const pollInterval = setInterval(fetchData, 5000);
-
-    // Refresh saat tab kembali aktif
-    const onVisibility = () => {
-      if (document.visibilityState === "visible") fetchData();
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
-    return () => {
-      clearTimeout(realtimeTimeout);
-      clearInterval(pollInterval);
-      document.removeEventListener("visibilitychange", onVisibility);
-      supabase.removeChannel(channel);
-    };
-  }, []);
 
   const filterByDate = (logs: any[]) => {
     return logs.filter((log) => {

@@ -25,7 +25,7 @@ export default function RootLayout({
   return (
     <html lang="id" className={sora.variable} suppressHydrationWarning>
       <head />
-      <body className="bg-background text-foreground font-sora antialiased">
+      <body className="bg-background text-foreground font-sora antialiased" suppressHydrationWarning>
         <Script id="theme-init" strategy="beforeInteractive">
           {`
             (function() {

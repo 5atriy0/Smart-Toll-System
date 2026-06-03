@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSession, signIn as apiSignIn, signOut as apiSignOut } from '@/services/authService';
+import { getSession, signIn as apiSignIn, signOut as apiSignOut, signInWithGoogle as apiSignInWithGoogle } from '@/services/authService';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types/supabase';
 import type { User } from '@supabase/supabase-js';
@@ -13,6 +13,7 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (email: string, password: string, rememberMe: boolean) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -85,6 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   }, []);
 
+  const signInWithGoogle = useCallback(async () => {
+    await apiSignInWithGoogle();
+  }, []);
+
   const signOut = useCallback(async () => {
     await apiSignOut();
     setUser(null);
@@ -111,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated: !!user,
         signIn,
+        signInWithGoogle,
         signOut,
         refreshProfile,
       }}
