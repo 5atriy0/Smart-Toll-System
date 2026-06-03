@@ -96,7 +96,7 @@ export default function NotFound() {
 
         {/* Back button */}
         <Link
-          href="/"
+          href="/dashboard"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-white transition-all duration-200 group"
           style={{
             backgroundColor: 'hsl(38, 91%, 41%)',

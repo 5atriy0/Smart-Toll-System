@@ -26,7 +26,7 @@ export async function signUp(email: string, password: string) {
 export async function resetPassword(email: string) {
   const supabaseClient = await import('@/lib/supabase/client').then(m => m.createClient());
   const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/login`,
+    redirectTo: `${window.location.origin}/reset-password`,
   });
   return { data, error };
 }
@@ -34,6 +34,27 @@ export async function resetPassword(email: string) {
 export async function signOut() {
   const res = await fetch('/api/auth/logout', { method: 'POST' });
   return res.ok ? { error: null } : { error: new Error('Logout gagal') };
+}
+
+export async function signInWithGoogle() {
+  const { createClient } = await import('@/lib/supabase/client');
+  const supabase = createClient();
+  const redirectTo = `${window.location.origin}/auth/callback`;
+  console.log('[signInWithGoogle] redirectTo:', redirectTo);
+  console.log('[signInWithGoogle] Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo,
+      queryParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+  });
+  if (error) console.error('[signInWithGoogle] error:', error);
+  if (data?.url) console.log('[signInWithGoogle] OAuth URL:', data.url);
+  return { data, error };
 }
 
 export async function getSession(): Promise<{ user: User | null; profile: Profile | null }> {
