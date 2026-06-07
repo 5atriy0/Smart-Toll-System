@@ -6,7 +6,6 @@ import { useAnalytics } from '@/hooks/useAnalytics'
 import { useTransactions } from '@/hooks/useTransactions'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 type StatCardProps = {
@@ -48,11 +47,9 @@ function StatCard({ title, value, icon, trend, loading }: StatCardProps) {
 
 export function DashboardView() {
   const { logs, loading: txLoading } = useTransactions();
-  const { todayMetrics, trendData, recentAlerts, esp32Status } = useAnalytics();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const { todayMetrics, recentAlerts, esp32Status, loading: analyticsLoading } = useAnalytics();
 
-  const loading = !mounted || txLoading;
+  const loading = txLoading || analyticsLoading;
 
   const metricCards = [
     {

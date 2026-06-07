@@ -22,7 +22,7 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
     >
       <span className="mt-0.5 flex-shrink-0">{ICON_MAP[toast.type]}</span>
       <p className="text-sm text-foreground flex-1 leading-snug">{toast.message}</p>
-      <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition-colors flex-shrink-0">
+      <button onClick={onClose} className="text-muted-foreground/50 hover:text-foreground transition-colors flex-shrink-0" aria-label="Tutup notifikasi">
         <X className="w-3.5 h-3.5" />
       </button>
     </div>
@@ -35,7 +35,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2">
+    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2" role="status" aria-live="polite">
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} onClose={() => {}} />
       ))}

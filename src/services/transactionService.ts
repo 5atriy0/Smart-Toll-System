@@ -1,7 +1,8 @@
-import { supabase } from "@/services/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 import type { VwTransactionDetails } from "@/types/supabase";
 
 export const getTransactions = async (limit: number = 10) => {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("vw_transaction_details")
     .select("*")

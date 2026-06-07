@@ -1,4 +1,4 @@
-import { supabase } from "@/services/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 import type { DashboardStats } from "@/types/supabase";
 
 export interface HourlyVolume {
@@ -28,6 +28,7 @@ export interface TravelTimeData {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats | null> {
+  const supabase = createClient();
   const { data, error } = await supabase.rpc("get_dashboard_stats");
   if (error) {
     console.error("getDashboardStats error:", error);
@@ -37,6 +38,7 @@ export async function getDashboardStats(): Promise<DashboardStats | null> {
 }
 
 export async function getHourlyAnalytics(): Promise<HourlyVolume[]> {
+  const supabase = createClient();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -67,6 +69,7 @@ export async function getHourlyAnalytics(): Promise<HourlyVolume[]> {
 }
 
 export async function getRevenue(): Promise<RevenueData[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("transactions")
     .select("tap_in_time, fee")
@@ -91,6 +94,7 @@ export async function getRevenue(): Promise<RevenueData[]> {
 }
 
 export async function getVehiclesInOut(): Promise<VehiclesInOut[]> {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("transactions")
     .select("tap_in_time, tap_out_time")
@@ -115,11 +119,18 @@ export async function getVehiclesInOut(): Promise<VehiclesInOut[]> {
   });
 }
 
-export async function getAvgSpeed(): Promise<AvgSpeedData[]> {
-  const { data, error } = await supabase
+export async function getAvgSpeed(startDate?: string): Promise<AvgSpeedData[]> {
+  const supabase = createClient();
+  let query = supabase
     .from("transactions")
     .select("tap_in_time, average_speed")
     .not("average_speed", "is", null);
+
+  if (startDate) {
+    query = query.gte("tap_in_time", startDate);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) return [];
 
@@ -140,11 +151,18 @@ export async function getAvgSpeed(): Promise<AvgSpeedData[]> {
   });
 }
 
-export async function getTravelTime(): Promise<TravelTimeData[]> {
-  const { data, error } = await supabase
+export async function getTravelTime(startDate?: string): Promise<TravelTimeData[]> {
+  const supabase = createClient();
+  let query = supabase
     .from("transactions")
     .select("tap_in_time, duration_minutes")
     .not("duration_minutes", "is", null);
+
+  if (startDate) {
+    query = query.gte("tap_in_time", startDate);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) return [];
 
@@ -164,3 +182,4 @@ export async function getTravelTime(): Promise<TravelTimeData[]> {
     return { name: dayNames[d.getDay()], time: Math.round(g.total / g.count) };
   });
 }
+

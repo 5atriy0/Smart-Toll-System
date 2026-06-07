@@ -88,6 +88,9 @@ export function Navbar() {
         <button
           onClick={() => setProfileOpen(!profileOpen)}
           className="flex items-center gap-3 pl-4 border-l border-border hover:opacity-80 transition-opacity"
+          aria-expanded={profileOpen}
+          aria-haspopup="true"
+          aria-label="Menu profil"
         >
           <div className="flex flex-col items-end hidden sm:flex">
             <span className="text-sm font-medium text-foreground">{profile?.name || user?.email?.split('@')[0] || 'User'}</span>
@@ -100,7 +103,7 @@ export function Navbar() {
 
         {/* Dropdown */}
         {profileOpen && (
-          <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20 overflow-hidden z-50">
+          <div className="absolute right-0 top-full mt-2 w-64 rounded-xl border border-border bg-card/95 backdrop-blur-xl shadow-2xl shadow-black/20 overflow-hidden z-50" role="menu">
             {/* User info */}
             <div className="px-4 py-4 border-b border-border">
               <div className="flex items-center gap-3">
@@ -123,6 +126,7 @@ export function Navbar() {
                 href="/profile"
                 onClick={() => setProfileOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-colors"
+                role="menuitem"
               >
                 <UserCircle className="w-4 h-4" />
                 Profil
@@ -134,6 +138,7 @@ export function Navbar() {
               <button
                 onClick={() => { setProfileOpen(false); signOut(); }}
                 className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-[#ef4444] hover:bg-[rgba(239,68,68,0.08)] transition-colors"
+                role="menuitem"
               >
                 <LogOut className="w-4 h-4" />
                 Keluar

@@ -1,4 +1,4 @@
-import { supabase } from "@/services/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
 import type {
   VwUserDetails,
   CreateUserWithCardParams,
@@ -6,6 +6,7 @@ import type {
 } from "@/types/supabase";
 
 export const getUsers = async (): Promise<VwUserDetails[]> => {
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("vw_user_details")
     .select("*")
@@ -24,6 +25,7 @@ export const topUp = async (
   amount: number,
   adminId: string
 ) => {
+  const supabase = createClient();
   const { error } = await supabase.rpc("top_up", {
     p_card_uid: cardUid,
     p_amount: amount,
@@ -34,6 +36,7 @@ export const topUp = async (
 };
 
 export const createUser = async (params: CreateUserWithCardParams) => {
+  const supabase = createClient();
   const { data, error } = await supabase.rpc(
     "create_user_with_card",
     params
@@ -45,6 +48,7 @@ export const updateCardStatus = async (
   cardUid: string,
   status: CardStatus
 ) => {
+  const supabase = createClient();
   const { error } = await supabase.rpc("update_card_status", {
     p_card_uid: cardUid,
     p_status: status,

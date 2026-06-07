@@ -18,15 +18,25 @@ export const useAnalytics = () => {
   const [vehiclesInOut, setVehiclesInOut] = useState<any[]>([]);
   const [avgSpeed, setAvgSpeed] = useState<any[]>([]);
   const [travelTime, setTravelTime] = useState<any[]>([]);
+  const [todayAvgSpeed, setTodayAvgSpeed] = useState(0);
+  const [todayAvgDuration, setTodayAvgDuration] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const fetchAll = async () => {
-    const [s, rev, hourly, vInOut, speed, travel] = await Promise.all([
+    setLoading(true);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayStr = today.toISOString();
+
+    const [s, rev, hourly, vInOut, speed, travel, tSpeed, tDuration] = await Promise.all([
       getDashboardStats(),
       getRevenue(),
       getHourlyAnalytics(),
       getVehiclesInOut(),
       getAvgSpeed(),
       getTravelTime(),
+      getAvgSpeed(todayStr),
+      getTravelTime(todayStr),
     ]);
 
     setStats(s);
@@ -35,6 +45,9 @@ export const useAnalytics = () => {
     setVehiclesInOut(Array.isArray(vInOut) ? vInOut : []);
     setAvgSpeed(Array.isArray(speed) ? speed : []);
     setTravelTime(Array.isArray(travel) ? travel : []);
+    setTodayAvgSpeed(tSpeed?.[0]?.speed ?? 0);
+    setTodayAvgDuration(tDuration?.[0]?.time ?? 0);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -48,16 +61,8 @@ export const useAnalytics = () => {
     revenueTrend: "+0%",
     activeUsers: stats?.total_users ?? 0,
     usersTrend: "+0",
-    avgSpeed:
-      avgSpeed.length > 0
-        ? avgSpeed.reduce((acc: number, d: any) => acc + d.speed, 0) /
-          avgSpeed.length
-        : 0,
-    avgDuration:
-      travelTime.length > 0
-        ? travelTime.reduce((acc: number, d: any) => acc + d.time, 0) /
-          travelTime.length
-        : 0,
+    avgSpeed: todayAvgSpeed,
+    avgDuration: todayAvgDuration,
   };
 
   const recentAlerts = [
@@ -78,5 +83,6 @@ export const useAnalytics = () => {
     recentAlerts,
     systemLogs,
     esp32Status: "Online" as const,
+    loading,
   };
 };
