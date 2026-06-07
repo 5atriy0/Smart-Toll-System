@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import type { FullDashboardResult } from "@/types/supabase";
+import type { FullDashboardResult } from "@/lib/types/supabase";
 
 export async function getFullDashboard(): Promise<FullDashboardResult | null> {
   const client = createClient();

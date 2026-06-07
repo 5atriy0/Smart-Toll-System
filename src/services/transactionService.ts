@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import type { VwTransactionDetails } from "@/types/supabase";
+import type { VwTransactionDetails } from "@/lib/types/supabase";
 
 export interface GetTransactionsParams {
   dateFrom?: string;

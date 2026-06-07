@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { useRouter } from 'next/navigation';
 import { getSession, signIn as apiSignIn, signOut as apiSignOut, signInWithGoogle as apiSignInWithGoogle } from '@/services/authService';
 import { createClient } from '@/lib/supabase/client';
-import type { Profile } from '@/types/supabase';
+import type { Profile } from '@/lib/types/supabase';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthState {

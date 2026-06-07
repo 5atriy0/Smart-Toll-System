@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { getTransactions } from "@/services/transactionService";
-import type { VwTransactionDetails } from "@/types/supabase";
+import type { VwTransactionDetails } from "@/lib/types/supabase";
 
 const parseUTC = (ts: string | null) => {
   if (!ts) return null;

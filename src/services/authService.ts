@@ -1,4 +1,4 @@
-import type { Profile } from '@/types/supabase';
+import type { Profile } from '@/lib/types/supabase';
 import type { User } from '@supabase/supabase-js';
 
 export async function signIn(email: string, password: string, rememberMe: boolean) {

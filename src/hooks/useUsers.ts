@@ -7,7 +7,7 @@ import {
   createUser,
   updateCardStatus,
 } from "@/services/userService";
-import type { VwUserDetails } from "@/types/supabase";
+import type { VwUserDetails } from "@/lib/types/supabase";
 
 export type UserItem = {
   id: string;

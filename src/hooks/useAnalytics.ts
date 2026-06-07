@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getFullDashboard } from "@/services/analyticsService";
-import type { DashboardStats } from "@/types/supabase";
+import type { DashboardStats } from "@/lib/types/supabase";
 
 export const useAnalytics = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);

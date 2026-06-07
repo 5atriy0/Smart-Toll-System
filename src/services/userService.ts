@@ -3,7 +3,7 @@ import type {
   VwUserDetails,
   CreateUserWithCardParams,
   CardStatus,
-} from "@/types/supabase";
+} from "@/lib/types/supabase";
 
 export const getUsers = async (): Promise<VwUserDetails[]> => {
   const supabase = createClient();
