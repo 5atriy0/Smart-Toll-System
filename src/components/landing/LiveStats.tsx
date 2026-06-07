@@ -50,7 +50,7 @@ function Counter({ target, suffix = '', decimals = 0 }: { target: number; suffix
 
 const stats = [
   { label: 'Total Kendaraan', target: 28450, suffix: '+', icon: '🚗' },
-  { label: 'Pendapatan Hari Ini', target: 18750000, prefix: 'Rp ', decimals: 0 },
+  { label: 'Pendapatan Hari Ini', target: 18750000, prefix: 'Rp ', decimals: 0, icon: null },
   { label: 'Pengguna Aktif', target: 3420, suffix: '+', icon: '👤' },
   { label: 'Transaksi Hari Ini', target: 1256, suffix: '', icon: '📊' },
 ];
@@ -81,7 +81,7 @@ export function LiveStats() {
               key={s.label}
               className="relative text-center p-6 lg:p-8 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm"
             >
-              <div className="text-3xl mb-3">{s.icon}</div>
+              {s.icon && <div className="text-3xl mb-3" aria-hidden="true">{s.icon}</div>}
               <div className="text-2xl lg:text-3xl font-bold text-accent mb-2">
                 {s.prefix || ''}
                 <Counter target={s.target} suffix={s.suffix || ''} decimals={s.decimals || 0} />

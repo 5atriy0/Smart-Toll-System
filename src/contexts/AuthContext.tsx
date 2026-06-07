@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .from('profiles')
       .select('*')
       .eq('auth_user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (!data) {
       const name = userEmail?.split('@')[0] || 'User';
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .update({ email: userEmail })
         .eq('auth_user_id', userId)
         .select()
-        .single();
+        .maybeSingle();
       if (updated) data = updated as Profile;
     }
 

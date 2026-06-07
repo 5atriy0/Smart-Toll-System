@@ -241,7 +241,6 @@ export function LoginView() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className={styles.togglePassword}
-                    tabIndex={-1}
                     aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

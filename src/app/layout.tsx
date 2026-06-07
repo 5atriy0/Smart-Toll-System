@@ -9,6 +9,7 @@ const sora = Sora({
   subsets: ['latin'],
   variable: '--font-sora',
   display: 'swap',
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -38,6 +39,12 @@ export default function RootLayout({
             })();
           `}
         </Script>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-accent focus:text-white focus:rounded-lg focus:text-sm focus:font-medium"
+        >
+          Loncat ke konten utama
+        </a>
         <ToastWrapper>{children}</ToastWrapper>
       </body>
     </html>
