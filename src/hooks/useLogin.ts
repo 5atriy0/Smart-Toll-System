@@ -47,7 +47,7 @@ export function useLogin() {
       }
     } catch {}
 
-    router.push('/');
+    router.push('/dashboard');
   };
 
   return {
