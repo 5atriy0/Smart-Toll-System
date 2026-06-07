@@ -1,15 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  getDashboardStats,
-  getHourlyAnalytics,
-  getRevenue,
-  getVehiclesInOut,
-  getAvgSpeed,
-  getTravelTime,
-} from "@/services/analyticsService";
-import type { DashboardStats } from "@/types/supabase";
+import { getFullDashboard } from "@/services/analyticsService";
+import type { DashboardStats } from "@/lib/types/supabase";
 
 export const useAnalytics = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -24,29 +17,17 @@ export const useAnalytics = () => {
 
   const fetchAll = async () => {
     setLoading(true);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayStr = today.toISOString();
-
-    const [s, rev, hourly, vInOut, speed, travel, tSpeed, tDuration] = await Promise.all([
-      getDashboardStats(),
-      getRevenue(),
-      getHourlyAnalytics(),
-      getVehiclesInOut(),
-      getAvgSpeed(),
-      getTravelTime(),
-      getAvgSpeed(todayStr),
-      getTravelTime(todayStr),
-    ]);
-
-    setStats(s);
-    setTrendData(Array.isArray(rev) ? rev : []);
-    setHourlyData(Array.isArray(hourly) ? hourly : []);
-    setVehiclesInOut(Array.isArray(vInOut) ? vInOut : []);
-    setAvgSpeed(Array.isArray(speed) ? speed : []);
-    setTravelTime(Array.isArray(travel) ? travel : []);
-    setTodayAvgSpeed(tSpeed?.[0]?.speed ?? 0);
-    setTodayAvgDuration(tDuration?.[0]?.time ?? 0);
+    const data = await getFullDashboard();
+    if (data) {
+      setStats(data.stats);
+      setTrendData(Array.isArray(data.revenue_trend) ? data.revenue_trend : []);
+      setHourlyData(Array.isArray(data.hourly_volume) ? data.hourly_volume : []);
+      setVehiclesInOut(Array.isArray(data.vehicles_in_out) ? data.vehicles_in_out : []);
+      setAvgSpeed(Array.isArray(data.avg_speed) ? data.avg_speed : []);
+      setTravelTime(Array.isArray(data.travel_time) ? data.travel_time : []);
+      setTodayAvgSpeed(data.stats.today_avg_speed);
+      setTodayAvgDuration(data.stats.today_avg_duration);
+    }
     setLoading(false);
   };
 

@@ -34,7 +34,7 @@ export async function GET() {
     .from('profiles')
     .select('*')
     .eq('auth_user_id', user.id)
-    .single();
+    .maybeSingle();
 
   return NextResponse.json({ user, profile });
 }

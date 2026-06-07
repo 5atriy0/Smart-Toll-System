@@ -3,7 +3,7 @@ import type {
   VwUserDetails,
   CreateUserWithCardParams,
   CardStatus,
-} from "@/types/supabase";
+} from "@/lib/types/supabase";
 
 export const getUsers = async (): Promise<VwUserDetails[]> => {
   const supabase = createClient();
@@ -18,6 +18,37 @@ export const getUsers = async (): Promise<VwUserDetails[]> => {
   }
 
   return data as VwUserDetails[];
+};
+
+export interface SearchUsersParams {
+  search?: string;
+  status?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchUsersResult {
+  data: VwUserDetails[];
+  total: number;
+}
+
+export const searchUsers = async (
+  params?: SearchUsersParams
+): Promise<SearchUsersResult> => {
+  const supabase = createClient();
+  const { data, error } = await supabase.rpc("search_users", {
+    p_search: params?.search ?? null,
+    p_status: params?.status ?? null,
+    p_limit: params?.limit ?? 50,
+    p_offset: params?.offset ?? 0,
+  });
+
+  if (error) {
+    console.error("searchUsers error:", error);
+    return { data: [], total: 0 };
+  }
+
+  return data as unknown as SearchUsersResult;
 };
 
 export const topUp = async (

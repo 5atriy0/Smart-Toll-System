@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { useRouter } from 'next/navigation';
 import { getSession, signIn as apiSignIn, signOut as apiSignOut, signInWithGoogle as apiSignInWithGoogle } from '@/services/authService';
 import { createClient } from '@/lib/supabase/client';
-import type { Profile } from '@/types/supabase';
+import type { Profile } from '@/lib/types/supabase';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthState {
@@ -33,21 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select('*')
       .eq('auth_user_id', userId)
       .maybeSingle();
-
-    if (!data) {
-      const name = userEmail?.split('@')[0] || 'User';
-      const { data: newProfile } = await supabase
-        .from('profiles')
-        .insert({
-          auth_user_id: userId,
-          name,
-          email: userEmail || '',
-          role: 'USER',
-        })
-        .select()
-        .single();
-      if (newProfile) data = newProfile as Profile;
-    }
 
     if (data && userEmail && data.email !== userEmail) {
       const { data: updated } = await supabase
@@ -104,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .from('profiles')
       .select('*')
       .eq('auth_user_id', user.id)
-      .single();
+      .maybeSingle();
     if (data) setProfile(data as Profile);
   }, [user]);
 

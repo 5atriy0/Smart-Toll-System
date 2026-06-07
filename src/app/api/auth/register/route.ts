@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       }, { status: 429 });
     }
 
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json({ error: 'Gagal mendaftar. Silakan coba lagi.' }, { status: 400 });
   }
 
   return NextResponse.json({ user: data.user, session: data.session });

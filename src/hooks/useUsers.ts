@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
-import { getUsers, topUp, createUser, updateCardStatus } from "@/services/userService";
-import type { VwUserDetails } from "@/types/supabase";
+import { useState, useEffect } from "react";
+import {
+  searchUsers,
+  topUp,
+  createUser,
+  updateCardStatus,
+} from "@/services/userService";
+import type { VwUserDetails } from "@/lib/types/supabase";
 
 export type UserItem = {
   id: string;
@@ -20,37 +25,33 @@ export type UserItem = {
 
 export function useUsers() {
   const [users, setUsers] = useState<UserItem[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const fetchUsers = async () => {
     setLoading(true);
-    const data = await getUsers();
-    setUsers(data as UserItem[]);
+    const result = await searchUsers({
+      search: searchQuery || undefined,
+      status: statusFilter !== "All" ? statusFilter : undefined,
+      limit: 50,
+    });
+    setUsers(result.data as UserItem[]);
+    setTotal(result.total);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchUsers();
-  }, []);
-
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.uid.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (user.plate_number || "")
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-      const matchesStatus =
-        statusFilter === "All" || user.card_status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [users, searchQuery, statusFilter]);
+  }, [searchQuery, statusFilter]);
 
   const addBalance = async (uid: string, amount: number) => {
-    const { error } = await topUp(uid, amount, "00000000-0000-0000-0000-000000000000");
+    const { error } = await topUp(
+      uid,
+      amount,
+      "00000000-0000-0000-0000-000000000000"
+    );
     if (!error) {
       await fetchUsers();
     }
@@ -88,7 +89,8 @@ export function useUsers() {
   };
 
   return {
-    users: filteredUsers,
+    users,
+    total,
     loading,
     searchQuery,
     setSearchQuery,

@@ -1,11 +1,9 @@
 'use client';
 
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ActivitySquare, CircleDot } from 'lucide-react';
 
-export function VisualIndicators() {
-  const { esp32Status } = useAnalytics();
+export function VisualIndicators({ esp32Status }: { esp32Status: string }) {
   const isOnline = esp32Status === 'Online';
 
   return (

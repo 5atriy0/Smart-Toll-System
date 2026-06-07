@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
-import type { Profile } from '@/types/supabase';
+import type { Profile } from '@/lib/types/supabase';
 
 export async function updateProfile(authUserId: string, updates: { name?: string; email?: string }) {
   const supabase = createClient();
@@ -8,6 +8,6 @@ export async function updateProfile(authUserId: string, updates: { name?: string
     .update(updates)
     .eq('auth_user_id', authUserId)
     .select()
-    .single();
+    .maybeSingle();
   return { profile: data as Profile | null, error };
 }

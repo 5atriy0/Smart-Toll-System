@@ -8,14 +8,14 @@ import { useAnalytics } from '@/hooks/useAnalytics'
 import styles from './AnalyticsView.module.scss'
 
 export function AnalyticsView() {
-  const { trendData, hourlyData, vehiclesInOut, avgSpeed, travelTime } = useAnalytics();
+  const { trendData, hourlyData, vehiclesInOut, avgSpeed, travelTime, esp32Status } = useAnalytics();
 
   return (
     <div className={`space-y-6 ${styles.container}`}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <GateStatus />
+        <GateStatus esp32Status={esp32Status} />
         <LiveSensorFeed />
-        <VisualIndicators />
+        <VisualIndicators esp32Status={esp32Status} />
       </div>
 
       <AnalyticsOverview
