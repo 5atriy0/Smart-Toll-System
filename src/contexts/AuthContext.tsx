@@ -34,21 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .eq('auth_user_id', userId)
       .maybeSingle();
 
-    if (!data) {
-      const name = userEmail?.split('@')[0] || 'User';
-      const { data: newProfile } = await supabase
-        .from('profiles')
-        .insert({
-          auth_user_id: userId,
-          name,
-          email: userEmail || '',
-          role: 'USER',
-        })
-        .select()
-        .single();
-      if (newProfile) data = newProfile as Profile;
-    }
-
     if (data && userEmail && data.email !== userEmail) {
       const { data: updated } = await supabase
         .from('profiles')
@@ -104,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .from('profiles')
       .select('*')
       .eq('auth_user_id', user.id)
-      .single();
+      .maybeSingle();
     if (data) setProfile(data as Profile);
   }, [user]);
 

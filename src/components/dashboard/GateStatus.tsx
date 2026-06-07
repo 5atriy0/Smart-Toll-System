@@ -1,11 +1,9 @@
 'use client';
 
-import { useAnalytics } from '@/hooks/useAnalytics';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Webhook, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 
-export function GateStatus() {
-  const { esp32Status } = useAnalytics();
+export function GateStatus({ esp32Status }: { esp32Status: string }) {
   
   const getStatusConfig = () => {
     switch (esp32Status) {

@@ -225,6 +225,15 @@ export interface DashboardStats {
   today_revenue: number;
 }
 
+export interface FullDashboardResult {
+  stats: DashboardStats & { today_avg_speed: number; today_avg_duration: number };
+  hourly_volume: { name: string; volume: number }[];
+  revenue_trend: { name: string; revenue: number }[];
+  vehicles_in_out: { name: string; in: number; out: number }[];
+  avg_speed: { name: string; speed: number }[];
+  travel_time: { name: string; time: number }[];
+}
+
 export type TapInResult = string; // transaction_id (UUID)
 export type TapOutResult = void;
 export type TopUpResult = void;
@@ -260,6 +269,7 @@ export interface Database {
       update_card_status: { Args: UpdateCardStatusParams; Returns: UpdateCardStatusResult };
       create_user_with_card: { Args: CreateUserWithCardParams; Returns: CreateUserWithCardResult };
       get_dashboard_stats: { Args: Record<string, never>; Returns: DashboardStats };
+      get_full_dashboard: { Args: Record<string, never>; Returns: FullDashboardResult };
       check_card: { Args: CheckCardParams; Returns: CheckCardResult };
     };
   };

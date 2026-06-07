@@ -8,6 +8,6 @@ export async function updateProfile(authUserId: string, updates: { name?: string
     .update(updates)
     .eq('auth_user_id', authUserId)
     .select()
-    .single();
+    .maybeSingle();
   return { profile: data as Profile | null, error };
 }
