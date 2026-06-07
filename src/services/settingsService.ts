@@ -1,4 +1,6 @@
-import { supabase } from "@/services/supabaseClient";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 let cache: Record<string, string> | null = null;
 
