@@ -9,8 +9,14 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    getSession().then(({ session }) => {
-      if (session) router.push('/dashboard');
+    getSession().then(({ user, profile }) => {
+      if (user) {
+        if (profile?.role === 'USER') {
+          router.push('/user');
+        } else {
+          router.push('/dashboard');
+        }
+      }
     });
   }, [router]);
 

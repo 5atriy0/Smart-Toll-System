@@ -68,7 +68,7 @@ export function ProfileView() {
                   <h2 className="text-lg font-bold text-foreground">{profile?.name || user?.email?.split('@')[0] || 'User'}</h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mt-1">
                     <span className="w-2 h-2 rounded-full bg-success" />
-                    {profile?.role === 'ADMIN' ? 'Administrator' : 'User'}
+                    {profile?.role === 'ADMIN' ? 'Administrator' : 'Pengguna'}
                   </p>
                 </div>
               </div>
@@ -132,8 +132,7 @@ export function ProfileView() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 transition-colors"
-                      style={{ focusRingColor: 'hsl(var(--accent))' }}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
                       placeholder="Masukkan nama"
                     />
                   </div>

@@ -4,17 +4,25 @@ import { useEffect, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+export function ProtectedRoute({ children, allowedRoles }: { children: ReactNode, allowedRoles?: string[] }) {
+  const { isAuthenticated, isLoading, profile } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push('/login');
+      } else if (allowedRoles && profile?.role && !allowedRoles.includes(profile.role)) {
+        if (profile.role === 'USER') {
+          router.push('/user');
+        } else {
+          router.push('/dashboard');
+        }
+      }
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, profile, router, allowedRoles]);
 
-  if (isLoading) {
+  if (isLoading || (isAuthenticated && allowedRoles && profile && !allowedRoles.includes(profile.role))) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
