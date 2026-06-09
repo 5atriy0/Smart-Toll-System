@@ -2,48 +2,86 @@
 
 import { useState, useEffect } from "react";
 import { getFullDashboard } from "@/services/analyticsService";
-import type { DashboardStats } from "@/lib/types/supabase";
+import { getTransactions } from "@/services/transactionService";
 
-export const useAnalytics = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [trendData, setTrendData] = useState<any[]>([]);
-  const [hourlyData, setHourlyData] = useState<any[]>([]);
-  const [vehiclesInOut, setVehiclesInOut] = useState<any[]>([]);
-  const [avgSpeed, setAvgSpeed] = useState<any[]>([]);
-  const [travelTime, setTravelTime] = useState<any[]>([]);
-  const [todayAvgSpeed, setTodayAvgSpeed] = useState(0);
-  const [todayAvgDuration, setTodayAvgDuration] = useState(0);
+function computeDateFrom(range: string): string | undefined {
+  const now = new Date();
+  if (range === "Hari Ini") {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  }
+  if (range === "7 Hari Terakhir") {
+    const d = new Date(); d.setDate(now.getDate() - 7); return d.toISOString();
+  }
+  if (range === "Bulan Ini") {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  }
+  return undefined;
+}
+
+const DATE_LABELS: Record<string, string> = {
+  "Hari Ini": "Hari Ini",
+  "7 Hari Terakhir": "7 Hari",
+  "Bulan Ini": "Bulan Ini",
+  "Semua Waktu": "Semua Waktu",
+};
+
+export const useAnalytics = (dateRange: string = "Hari Ini") => {
+  const [stats, setStats] = useState<{
+    totalUsers: number;
+    totalVehicles: number;
+    revenue: number;
+    avgSpeed: number;
+    avgDuration: number;
+  }>({ totalUsers: 0, totalVehicles: 0, revenue: 0, avgSpeed: 0, avgDuration: 0 });
   const [loading, setLoading] = useState(true);
 
   const fetchAll = async () => {
     setLoading(true);
-    const data = await getFullDashboard();
-    if (data) {
-      setStats(data.stats);
-      setTrendData(Array.isArray(data.revenue_trend) ? data.revenue_trend : []);
-      setHourlyData(Array.isArray(data.hourly_volume) ? data.hourly_volume : []);
-      setVehiclesInOut(Array.isArray(data.vehicles_in_out) ? data.vehicles_in_out : []);
-      setAvgSpeed(Array.isArray(data.avg_speed) ? data.avg_speed : []);
-      setTravelTime(Array.isArray(data.travel_time) ? data.travel_time : []);
-      setTodayAvgSpeed(data.stats.today_avg_speed);
-      setTodayAvgDuration(data.stats.today_avg_duration);
-    }
+    const [dashboardData, txResult] = await Promise.all([
+      getFullDashboard(),
+      getTransactions({ dateFrom: computeDateFrom(dateRange), limit: 5000 }),
+    ]);
+
+    const txList = txResult?.data || [];
+    const filteredRevenue = txList.reduce((sum, tx) => sum + (tx.fee || 0), 0);
+
+    const txWithSpeed = txList.filter((tx) => tx.average_speed != null);
+    const filteredAvgSpeed = txWithSpeed.length > 0
+      ? txWithSpeed.reduce((sum, tx) => sum + tx.average_speed, 0) / txWithSpeed.length
+      : dateRange === "Hari Ini" ? dashboardData?.stats.today_avg_speed || 0 : 0;
+
+    const txWithDuration = txList.filter((tx) => tx.duration_minutes != null);
+    const filteredAvgDuration = txWithDuration.length > 0
+      ? txWithDuration.reduce((sum, tx) => sum + tx.duration_minutes, 0) / txWithDuration.length
+      : dateRange === "Hari Ini" ? dashboardData?.stats.today_avg_duration || 0 : 0;
+
+    setStats({
+      totalUsers: dashboardData?.stats.total_users ?? 0,
+      totalVehicles: dashboardData?.stats.total_vehicles ?? 0,
+      revenue: filteredRevenue,
+      avgSpeed: filteredAvgSpeed,
+      avgDuration: filteredAvgDuration,
+    });
     setLoading(false);
   };
 
   useEffect(() => {
     fetchAll();
-  }, []);
+  }, [dateRange]);
+
+  const tf = DATE_LABELS[dateRange] || dateRange;
 
   const todayMetrics = {
-    totalVehicles: stats?.total_transactions ?? 0,
-    vehiclesTrend: "+0%",
-    revenue: stats?.today_revenue ?? 0,
-    revenueTrend: "+0%",
-    activeUsers: stats?.total_users ?? 0,
-    usersTrend: "+0",
-    avgSpeed: todayAvgSpeed,
-    avgDuration: todayAvgDuration,
+    totalUsers: stats.totalUsers,
+    totalVehicles: stats.totalVehicles,
+    revenue: stats.revenue,
+    avgSpeed: stats.avgSpeed,
+    avgDuration: stats.avgDuration,
+    userLabel: "Total Pengguna",
+    revenueLabel: `Pendapatan (${tf})`,
+    vehicleLabel: "Kendaraan Terdaftar",
+    speedLabel: `Kecepatan Rata-rata (${tf})`,
+    durationLabel: `Waktu Tempuh (${tf})`,
   };
 
   const recentAlerts = [
@@ -55,11 +93,6 @@ export const useAnalytics = () => {
   ];
 
   return {
-    trendData,
-    hourlyData,
-    vehiclesInOut,
-    avgSpeed,
-    travelTime,
     todayMetrics,
     recentAlerts,
     systemLogs,

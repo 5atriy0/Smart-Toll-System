@@ -1,12 +1,15 @@
 'use client';
 
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Car, TrendingUp, Clock, Gauge, ArrowUp, ArrowDown, Activity, AlertTriangle, Wrench, LayoutDashboard } from 'lucide-react'
+import { Users, Car, TrendingUp, Clock, Gauge, ArrowUp, ArrowDown, Activity, AlertTriangle, Wrench } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { useTransactions } from '@/hooks/useTransactions'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
+
+const DATE_OPTIONS = ['Hari Ini', '7 Hari Terakhir', 'Bulan Ini', 'Semua Waktu']
 
 type StatCardProps = {
   title: string
@@ -46,41 +49,39 @@ function StatCard({ title, value, icon, trend, loading }: StatCardProps) {
 }
 
 export function DashboardView() {
-  const { logs, loading: txLoading } = useTransactions();
-  const { todayMetrics, recentAlerts, esp32Status, loading: analyticsLoading } = useAnalytics();
+  const [dateRange, setDateRange] = useState('Hari Ini');
+  const { logs, loading: txLoading } = useTransactions(dateRange);
+  const { todayMetrics, recentAlerts, esp32Status, loading: analyticsLoading } = useAnalytics(dateRange);
 
   const loading = txLoading || analyticsLoading;
 
   const metricCards = [
     {
-      title: 'Total Pengguna',
-      value: todayMetrics.activeUsers.toString(),
+      title: todayMetrics.userLabel,
+      value: todayMetrics.totalUsers.toString(),
       icon: <Users className="w-4 h-4" />,
-      trend: { direction: 'up' as const, label: todayMetrics.usersTrend },
       loading,
     },
     {
-      title: 'Pendapatan',
+      title: todayMetrics.revenueLabel,
       value: `Rp ${(todayMetrics.revenue || 0).toLocaleString()}`,
       icon: <TrendingUp className="w-4 h-4" />,
-      trend: { direction: 'up' as const, label: todayMetrics.revenueTrend },
       loading,
     },
     {
-      title: 'Kendaraan',
+      title: todayMetrics.vehicleLabel,
       value: todayMetrics.totalVehicles.toString(),
       icon: <Car className="w-4 h-4" />,
-      trend: { direction: 'up' as const, label: 'Hari ini' },
       loading,
     },
     {
-      title: 'Kecepatan Rata-rata',
+      title: todayMetrics.speedLabel,
       value: `${todayMetrics.avgSpeed.toFixed(1)} km/h`,
       icon: <Gauge className="w-4 h-4" />,
       loading,
     },
     {
-      title: 'Waktu Tempuh Rata-rata',
+      title: todayMetrics.durationLabel,
       value: `${todayMetrics.avgDuration.toFixed(1)} mnt`,
       icon: <Clock className="w-4 h-4" />,
       loading,
@@ -91,6 +92,29 @@ export function DashboardView() {
 
   return (
     <div className="space-y-6">
+      {/* Filter Bar */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">Ringkasan data dan aktivitas sistem</p>
+        </div>
+        <div className="flex gap-1.5 bg-muted/30 rounded-lg p-1 border border-border">
+          {DATE_OPTIONS.map((opt) => (
+            <button
+              key={opt}
+              onClick={() => setDateRange(opt)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                dateRange === opt
+                  ? 'bg-card shadow-sm text-foreground border border-border'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {metricCards.map((m, i) => (
@@ -112,7 +136,7 @@ export function DashboardView() {
               {[1,2,3,4,5].map(i => <div key={i} className="h-10 rounded bg-muted shimmer" />)}
             </div>
           ) : recentTx.length === 0 ? (
-            <EmptyState title="Belum ada transaksi" description="Belum ada aktivitas transaksi hari ini." />
+            <EmptyState title="Belum ada transaksi" description="Belum ada aktivitas transaksi untuk periode ini." />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
