@@ -113,14 +113,33 @@ npm run dev
 
 ## Role-Based Routing
 
-| Role | Login → Redirect | Akses |
-|------|------------------|-------|
-| **Admin** | `/dashboard` | Sidebar + semua menu (manajemen akses, settings, users, dll) |
-| **User** | `/user` | Header simpel + wallet pribadi, topup, kartu, riwayat transaksi |
+| Role | Login → Redirect | Layout | Akses |
+|------|------------------|--------|-------|
+| **Admin** | `/dashboard` | Sidebar (navigasi kiri) + Navbar (judul halaman + profil) | Manajemen akses, transaksi, analitik, pengaturan, users |
+| **User** | `/user` | Navbar (logo Tollytics + profil), tanpa sidebar | Wallet pribadi, topup, kartu, riwayat transaksi |
 
 - Admin bisa tambah pengguna **dengan password** (via modal Tambah Pengguna)
 - Admin bisa **reset password** user lain (via modal Detail Pengguna → Reset Password)
 - User registrasi mandiri → role `USER`, hanya bisa akses `/user/*`
+
+## NFC Scan (User)
+
+User bisa scan UID kartu secara otomatis lewat NFC di HP Android.
+
+| Teknologi | Keterangan |
+|-----------|------------|
+| **Web NFC API** | `NDEFReader` — client-side, tanpa backend/cloud |
+| **Support** | Chrome Android v89+, Samsung Internet |
+| **Tidak support** | iOS, Desktop — tombol NFC otomatis tidak muncul |
+
+**Cara pakai:**
+1. Buka modal Tambah Kartu atau Edit Kartu di HP Android
+2. Tap tombol NFC (icon `Nfc`) di samping input UID
+3. Izinkan akses NFC saat diminta browser
+4. Tempelkan kartu RFID ke belakang HP
+5. UID terisi otomatis
+
+**File:** `src/hooks/useNfcScan.ts` — hook reusable, `src/components/nfc/NfcScanButton.tsx` — tombol dengan animasi loading + timeout 30 detik.
 
 ## Dashboard Layout
 
@@ -147,13 +166,60 @@ Filter **Hari Ini | 7 Hari Terakhir | Bulan Ini | Semua Waktu** di atas mengubah
   - User → `allowedRoles: ['USER', 'ADMIN']`
 - **API Routes** — semua route yang pakai `SUPABASE_SERVICE_ROLE_KEY` wajib validasi session + role admin
 
+## Theme Custom Colors
+
+| Variable | Light | Dark | Penggunaan |
+|----------|-------|------|-----------|
+| `--primary` | Navy `215 52% 22%` | `215 40% 35%` | Sidebar, stat cards, tombol umum |
+| `--accent` | Amber `38 91% 41%` | same | Tombol Tambah Kartu, aksen aktif |
+| `--topup` | Emerald `160 84% 39%` | `160 60% 45%` | Tombol & panel Top Up |
+| `--success` | Blue `210 60% 45%` | `210 50% 40%` | Status badges |
+| `--sidebar-bg` | Navy `215 52% 22%` | `215 40% 18%` | Background sidebar |
+
+---
+
 # Database Setup
-# Skema database, RPC functions, dan trigger sudah ada di Supabase.
-# Untuk informasi detail tentang tabel, views, RPC, dan arsitektur database,
-# lihat docs/DATABASE.md
+
+Skema database, RPC functions, dan trigger sudah ada di Supabase.
+Untuk informasi detail tentang tabel, views, RPC, dan arsitektur database,
+lihat `docs/DATABASE.md`
 
 # Firmware (Arduino IDE)
-# 1. Buka file .ino MQTT yang sesuai
-# 2. Install library: PubSubClient, ArduinoJson, MFRC522, ESP32Servo, LiquidCrystal_I2C
-# 3. Upload ke ESP32
+
+1. Buka file `.ino` MQTT yang sesuai di `firmware/esp32/`
+2. Install library: PubSubClient, ArduinoJson, MFRC522, ESP32Servo, LiquidCrystal_I2C
+3. Upload ke ESP32
+
+---
+
+# Struktur Proyek (Frontend)
+
+```
+src/
+├── app/
+│   ├── (dashboard)/    ← Admin layout (Sidebar + Navbar)
+│   │   ├── dashboard/
+│   │   ├── transactions/
+│   │   ├── analytics/
+│   │   ├── manajemen-akses/
+│   │   ├── settings/
+│   │   └── profile/
+│   ├── user/            ← User layout (Navbar with branding)
+│   │   ├── page.tsx     ← Wallet, kartu, top up, riwayat
+│   │   └── profile/
+│   ├── layout.tsx       ← Root layout
+│   └── globals.css      ← CSS variables (light/dark)
+├── components/
+│   ├── layout/          ← Sidebar, Navbar, ThemeToggle
+│   ├── nfc/             ← NfcScanButton
+│   ├── auth/            ← ProtectedRoute
+│   └── ui/              ← Card, ConfirmModal, dll
+├── hooks/
+│   ├── useAnalytics.ts
+│   ├── useNfcScan.ts    ← Web NFC scan logic
+│   └── ...
+└── services/
+    ├── cardService.ts
+    └── ...
+```
 ```

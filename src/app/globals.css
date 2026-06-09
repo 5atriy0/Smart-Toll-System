@@ -25,6 +25,8 @@
     --sidebar-bg: 215 52% 22%;
     --sidebar-fg: 0 0% 90%;
     --sidebar-active: 38 91% 41%;
+    --topup: 160 84% 39%;
+    --topup-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -48,6 +50,8 @@
     --sidebar-bg: 215 40% 18%;
     --sidebar-fg: 0 0% 80%;
     --sidebar-active: 38 91% 41%;
+    --topup: 160 60% 45%;
+    --topup-foreground: 0 0% 100%;
   }
 
   * {

@@ -14,7 +14,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 
-const NAV_ITEMS = [
+const DEFAULT_NAV_ITEMS = [
   { icon: LayoutDashboard, href: '/dashboard', label: 'Dashboard' },
   { icon: ShieldCheck, href: '/manajemen-akses', label: 'Manajemen Akses' },
   { icon: Activity, href: '/transactions', label: 'Transaksi' },
@@ -22,9 +22,10 @@ const NAV_ITEMS = [
   { icon: Settings, href: '/settings', label: 'Pengaturan' },
 ];
 
-export function Sidebar() {
+export function Sidebar({ navItems }: { navItems?: Array<{ icon: React.ComponentType<{ className?: string }>; href: string; label: string }> } = {}) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const items = navItems || DEFAULT_NAV_ITEMS;
 
   return (
     <>
@@ -51,7 +52,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-2 space-y-1 overflow-hidden">
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
@@ -125,7 +126,7 @@ export function Sidebar() {
         className="md:hidden fixed bottom-0 left-0 right-0 z-30 flex items-center justify-around h-16 px-2 border-t border-border"
         style={{ backgroundColor: 'hsl(var(--sidebar-bg))' }}
       >
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = pathname === item.href;
           return (
             <Link

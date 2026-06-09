@@ -32,6 +32,10 @@ module.exports = {
           DEFAULT: 'hsl(var(--warning))',
           foreground: 'hsl(var(--warning-foreground))',
         },
+        topup: {
+          DEFAULT: 'hsl(var(--topup))',
+          foreground: 'hsl(var(--topup-foreground))',
+        },
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
