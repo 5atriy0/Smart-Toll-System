@@ -47,7 +47,12 @@ export function useLogin() {
       }
     } catch {}
 
-    router.push('/dashboard');
+    const { profile } = await import('@/services/authService').then(m => m.getSession());
+    if (profile?.role === 'USER') {
+      router.push('/user');
+    } else {
+      router.push('/dashboard');
+    }
   };
 
   return {
