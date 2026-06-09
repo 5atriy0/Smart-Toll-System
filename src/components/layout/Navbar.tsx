@@ -18,9 +18,11 @@ const PAGE_MAP: Record<string, string> = {
   '/manajemen-akses/pengguna': 'Pengguna',
   '/manajemen-akses/uid': 'UID',
   '/manajemen-akses/kendaraan': 'Kendaraan',
+  '/user': 'Beranda',
+  '/user/profile': 'Profil',
 };
 
-export function Navbar() {
+export function Navbar({ branding }: { branding?: boolean }) {
   const pathname = usePathname();
   const { user, profile, signOut } = useAuth();
   const [lastUpdated, setLastUpdated] = useState('baru saja');
@@ -54,10 +56,26 @@ export function Navbar() {
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8">
       {/* Left: Title + last updated */}
       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold text-foreground tracking-tight">{currentTitle}</h1>
-        <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">
-          Diperbarui {lastUpdated}
-        </span>
+        {branding ? (
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'hsl(var(--sidebar-active))' }}>
+              <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+                <rect x="4" y="6" width="24" height="20" rx="3" stroke="white" strokeWidth="2.5" fill="none" />
+                <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="white" strokeWidth="1.8" fill="none" />
+                <line x1="14" y1="16" x2="18" y2="16" stroke="white" strokeWidth="2" />
+                <line x1="16" y1="14" x2="16" y2="18" stroke="white" strokeWidth="2" />
+              </svg>
+            </div>
+            <span className="font-bold text-sm tracking-widest text-foreground uppercase">Tollytics</span>
+          </div>
+        ) : (
+          <>
+            <h1 className="text-lg font-semibold text-foreground tracking-tight">{currentTitle}</h1>
+            <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">
+              Diperbarui {lastUpdated}
+            </span>
+          </>
+        )}
       </div>
 
       {/* Right: Theme toggle + Profile */}
@@ -101,7 +119,7 @@ export function Navbar() {
             {/* Menu */}
             <div className="p-1.5">
               <Link
-                href="/profile"
+                href={profile?.role === 'USER' ? '/user/profile' : '/profile'}
                 onClick={() => setProfileOpen(false)}
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-accent/5 transition-colors"
                 role="menuitem"

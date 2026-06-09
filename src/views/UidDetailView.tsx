@@ -70,7 +70,7 @@ export function UidDetailView() {
 
   const [detailCard, setDetailCard] = useState<CardWithUser | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [editForm, setEditForm] = useState({ balance: "0", status: "ACTIVE" });
+  const [editForm, setEditForm] = useState({ uid: "", balance: "0", status: "ACTIVE" });
   const [showConfirmEdit, setShowConfirmEdit] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
 
@@ -130,6 +130,7 @@ export function UidDetailView() {
   const handleEditSubmit = () => {
     if (!detailCard) return;
     const changes: string[] = [];
+    if (editForm.uid !== detailCard.uid) changes.push(`UID: ${detailCard.uid} → ${editForm.uid}`);
     if (Number(editForm.balance) !== detailCard.balance) changes.push(`Saldo: Rp ${detailCard.balance.toLocaleString("id-ID")} → Rp ${Number(editForm.balance).toLocaleString("id-ID")}`);
     if (editForm.status !== detailCard.status) changes.push(`Status: ${detailCard.status} → ${editForm.status}`);
     if (changes.length === 0) {
@@ -142,16 +143,16 @@ export function UidDetailView() {
   const handleEditConfirm = async () => {
     if (!detailCard) return;
     setEditLoading(true);
-    const { error } = await updateCard({
-      p_card_id: detailCard.id,
-      p_balance: Number(editForm.balance),
-      p_status: editForm.status,
-    });
+    const params: Record<string, unknown> = { p_card_id: detailCard.id };
+    if (editForm.uid !== detailCard.uid) params.p_uid = editForm.uid;
+    if (Number(editForm.balance) !== detailCard.balance) params.p_balance = Number(editForm.balance);
+    if (editForm.status !== detailCard.status) params.p_status = editForm.status;
+    const { error } = await updateCard(params as any);
     if (!error) {
       toast("Kartu diperbarui", "success");
       setShowConfirmEdit(false);
       setShowEditForm(false);
-      setDetailCard((prev) => prev ? { ...prev, balance: Number(editForm.balance), status: editForm.status as CardWithUser["status"] } : null);
+      setDetailCard((prev) => prev ? { ...prev, uid: params.p_uid ?? prev.uid, balance: params.p_balance !== undefined ? Number(params.p_balance) : prev.balance, status: (params.p_status || prev.status) as CardWithUser["status"] } : null);
       fetchData();
     } else toast("Gagal memperbarui kartu", "error");
     setEditLoading(false);
@@ -160,7 +161,7 @@ export function UidDetailView() {
   const openDetail = (card: CardWithUser) => {
     setDetailCard(card);
     setShowEditForm(false);
-    setEditForm({ balance: String(card.balance ?? 0), status: card.status });
+    setEditForm({ uid: card.uid, balance: String(card.balance ?? 0), status: card.status });
   };
 
   const handleAddCard = async () => {
@@ -389,9 +390,14 @@ export function UidDetailView() {
                   </button>
                 </div>
                 <div className="p-5 space-y-4">
-                  <p className="text-xs text-muted-foreground bg-muted/30 px-3 py-2 rounded-lg">
-                    UID: <span className="font-mono text-foreground">{detailCard.uid}</span>
-                    <span className="block text-foreground mt-0.5">{detailCard.profile_name}</span>
+                  <div>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1.5">UID Kartu</label>
+                    <input type="text" value={editForm.uid}
+                      onChange={(e) => setEditForm({ ...editForm, uid: e.target.value.toUpperCase() })}
+                      className="w-full bg-background/50 border border-border rounded-lg px-3.5 py-2 text-sm font-mono text-foreground focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20 transition-all" />
+                  </div>
+                  <p className="text-xs text-muted-foreground -mt-2">
+                    Pemilik: <span className="text-foreground">{detailCard.profile_name}</span>
                   </p>
                   <div>
                     <label className="block text-xs font-medium text-muted-foreground mb-1.5">Saldo (Rp)</label>
@@ -410,7 +416,7 @@ export function UidDetailView() {
                   </div>
                 </div>
                 <div className="flex justify-between px-5 py-3.5 border-t border-border">
-                  <button onClick={() => { setShowEditForm(false); setShowConfirmEdit(false); setEditForm({ balance: String(detailCard.balance ?? 0), status: detailCard.status }); }}
+                  <button onClick={() => { setShowEditForm(false); setShowConfirmEdit(false); setEditForm({ uid: detailCard.uid, balance: String(detailCard.balance ?? 0), status: detailCard.status }); }}
                     className="px-4 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors">Kembali</button>
                   <button onClick={handleEditSubmit}
                     className="px-4 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:bg-accent/90 transition-colors inline-flex items-center gap-1.5">
@@ -431,8 +437,11 @@ export function UidDetailView() {
         title="Konfirmasi Perubahan"
         description={
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Ringkasan perubahan untuk kartu <span className="font-mono text-foreground">{detailCard?.uid}</span></p>
+            <p className="text-xs text-muted-foreground">Ringkasan perubahan untuk kartu <span className="font-mono text-foreground">{editForm.uid || detailCard?.uid}</span></p>
             <div className="space-y-1">
+              {editForm.uid !== detailCard?.uid && (
+                <div className="flex justify-between text-xs"><span className="text-muted-foreground">UID:</span><span className="text-foreground font-medium font-mono">{editForm.uid}</span></div>
+              )}
               {Number(editForm.balance) !== detailCard?.balance && (
                 <div className="flex justify-between text-xs"><span className="text-muted-foreground">Saldo:</span><span className="text-foreground font-medium">Rp {Number(editForm.balance).toLocaleString("id-ID")}</span></div>
               )}
