@@ -1,14 +1,14 @@
 # Database Supabase — Tollytics
 
-> Update terakhir: 9 Juni 2026 (berdasarkan query `information_schema`)
+> Update terakhir: 9 Juni 2026 (riwayat perubahan — lihat Catatan Perubahan di bawah)
 
 ## Tabel (10)
 
 | Tabel | Primary Key | Kolom | Keterangan |
 |-------|-------------|-------|------------|
-| `profiles` | `id` (UUID) | `auth_user_id`, `name`, `email`, `role` (USER-DEFINED `user_role`), `is_active`, `created_at` | Profil user. `auth_user_id` nullable, FK ke `auth.users(id)` |
+| `profiles` | `id` (UUID) | `auth_user_id`, `name`, `email`, `role` (USER-DEFINED `user_role`), `is_active`, `created_at` | Profil user. `auth_user_id` nullable, FK ke `auth.users(id)`. `email` UNIQUE, `auth_user_id` UNIQUE — constraint ditambahkan untuk mencegah duplikasi |
 | `vehicles` | `id` (UUID) | `profile_id`, `plate_number`, `vehicle_type` (USER-DEFINED), `brand`, `color`, `created_at` | Kendaraan. `plate_number` unique. `brand` & `color` opsional |
-| `cards` | `id` (UUID) | `profile_id`, `vehicle_id`, `uid`, `balance`, `status` (USER-DEFINED `card_status`), `created_at` | Kartu RFID. `uid` unique, `balance` default 0 |
+| `cards` | `id` (UUID) | `profile_id`, `vehicle_id`, `uid`, `balance`, `status` (USER-DEFINED `card_status`), `created_at` | Kartu RFID. `uid` unique, `balance` default 0. `vehicle_id` nullable (diubah dari NOT NULL jadi nullable — sebelumnya error waktu hapus kendaraan karena FK) |
 | `transactions` | `id` (UUID) | `card_id`, `vehicle_id`, `gate_in_id`, `gate_out_id`, `tap_in_time`, `tap_out_time`, `fee`, `status` (USER-DEFINED `transaction_status`), `distance_km`, `duration_minutes`, `average_speed`, `created_at` | Transaksi tap in/out. `distance_km` default 2.00 |
 | `topups` | `id` (UUID) | `card_id`, `amount`, `method`, `created_by`, `created_at` | Riwayat top up saldo |
 | `gates` | `id` (UUID) | `name`, `location`, `status` (USER-DEFINED `device_status`), `created_at` | Gerbang tol. `name` unique |
@@ -40,7 +40,7 @@
 | `analytics_total_vehicles` | Jumlah kendaraan per tipe |
 | `analytics_low_balance_cards` | Kartu dengan saldo di bawah threshold |
 
-## Functions / RPC (20)
+## Functions / RPC (22)
 
 | Function | Return | Parameters | Fungsi |
 |----------|--------|-----------|--------|
@@ -48,10 +48,12 @@
 | `tap_out` | `void` | `p_uid text`, `p_gate_out uuid` | Selesaikan transaksi, hitung fee & durasi |
 | `top_up` | `void` | `p_card_uid text`, `p_amount bigint`, `p_method text`, `p_created_by uuid` | Insert topup (trigger tambah saldo otomatis) |
 | `update_card_status` | `void` | `p_card_uid text`, `p_status` (USER-DEFINED) | Ubah status kartu |
-| `create_user_with_card` | `uuid` | `p_name text`, `p_email text`, `p_uid text`, `p_plate_number text`, `p_vehicle_type` (USER-DEFINED), `p_role` (USER-DEFINED) | Buat profil + kendaraan + kartu 1x transaksi |
+| `create_user_with_card` | `uuid` | `p_name text`, `p_email text`, `p_role` (USER-DEFINED), `p_uid text?`, `p_plate_number text?`, `p_vehicle_type` (USER-DEFINED?) | Buat profil + opsional kendaraan + kartu 1x transaksi. `p_uid`, `p_plate_number`, `p_vehicle_type` dibuat optional untuk fleksibilitas (admin bisa daftarkan user tanpa UID dulu) |
 | `add_card` | `uuid` | `p_profile_id uuid`, `p_uid text`, `p_vehicle_id uuid`, `p_balance numeric` | Tambah kartu RFID baru |
 | `update_card` | `void` | `p_card_id uuid`, `p_balance numeric`, `p_status text`, `p_vehicle_id uuid` | Update field kartu |
-| `delete_card` | `void` | `p_card_id uuid` | Hapus kartu berdasarkan ID |
+| `delete_card` | `void` | `p_card_id uuid` | Hapus kartu berdasarkan ID. **SECURITY DEFINER** (bypass RLS). Cascade: hapus `transactions` + `topups` terkait sebelum hapus kartu — karena FK `transactions.card_id` pakai NO ACTION |
+| `update_vehicle` | `void` | `p_vehicle_id uuid`, `p_plate_number text?`, `p_vehicle_type text?`, `p_brand text?`, `p_color text?` | Update field kendaraan. **SECURITY DEFINER** + `SET search_path = public` |
+| `delete_vehicle` | `void` | `p_vehicle_id uuid` | Hapus kendaraan. **SECURITY DEFINER** + `SET search_path = public`. Cascade: UPDATE `cards SET vehicle_id = NULL` lalu DELETE `transactions` (karena NO ACTION) lalu hapus `vehicles` |
 | `check_card` | `json` | `p_uid text` | Validasi kartu sebelum tap-in |
 | `get_dashboard_stats` | `json` | — | Statistik dashboard (total user, kartu, kendaraan, transaksi hari ini, revenue) |
 | `get_full_dashboard` | `json` | — | Semua data dashboard + grafik (1 call, aggregation di server) |
@@ -60,7 +62,7 @@
 | `get_cards_by_profile` | `record` | `p_profile_id uuid` | Kartu + join kendaraan untuk user tertentu |
 | `get_users_summary` | USER-DEFINED | — | Semua user dengan jumlah kartu & kendaraan |
 | `get_all_settings` | `json` | — | Return semua settings sebagai JSON object |
-| `is_admin` | `boolean` | — | Cek apakah user login adalah ADMIN |
+| `is_admin` | `boolean` | — | Cek apakah user login adalah ADMIN. **SECURITY DEFINER** (dibuat dengan security definer untuk mencegah RLS recursion — tanpa ini, query ke `profiles` dari dalam RLS policy akan infinite loop) |
 | `handle_new_user` | `trigger` | — | Trigger: auto-create profile pas user daftar |
 | `process_topup` | `trigger` | — | Trigger: tambah saldo otomatis pas insert topup |
 | `process_transaction_completion` | `trigger` | — | Trigger: kurangin saldo otomatis pas transaksi selesai |
@@ -71,6 +73,8 @@
 |----------|---------|
 | `add_card` | Parameter `p_profile_id` terdaftar 2x di `information_schema` (duplikasi) — parameter aktual: `p_profile_id`, `p_uid`, `p_vehicle_id`, `p_balance` |
 | `update_card` | Parameter `p_card_id` & `p_balance` terdaftar 2x — parameter aktual: `p_card_id`, `p_balance`, `p_status`, `p_vehicle_id` |
+| `delete_card`, `update_vehicle`, `delete_vehicle` | Fungsi-fungsi ini menggunakan **`SECURITY DEFINER`** — jalan dengan privilege pemilik function, bukan user yang manggil. Ini diperlukan karena RLS di tabel `cards`, `vehicles`, dll. memblokir operasi DELETE/UPDATE dari client. |
+| `update_vehicle`, `delete_vehicle` | Juga menggunakan **`SET search_path = 'public'`** untuk memastikan resolusi tabel yang aman saat dijalankan sebagai SECURITY DEFINER |
 
 ## Triggers (3)
 
@@ -90,3 +94,18 @@
 - **Auto-profile** — Trigger `handle_new_user()` bikin profile otomatis pas user daftar
 - **Saldo otomatis** — Trigger `process_topup` tambah saldo; `process_transaction_completion` kurangi saldo
 - **Pencarian & pagination** — Semua filter + pagination di-handle RPC, bukan client
+- **SECURITY DEFINER RPC pattern** — RPC yang melakukan operasi admin (delete_card, update_vehicle, delete_vehicle, is_admin) di-set sebagai `SECURITY DEFINER` untuk bypass RLS. Untuk RPC yang mengubah data (`delete_card`, `delete_vehicle`, `update_vehicle`), ditambahkan juga `SET search_path` untuk keamanan
+
+## Catatan Perubahan
+
+| Tanggal | Perubahan |
+|---------|-----------|
+| 9 Juni 2026 | Dokumentasi awal (berdasarkan query `information_schema`) |
+| Juni 2026 | `create_user_with_card`: parameter `p_uid`, `p_plate_number`, `p_vehicle_type` dijadikan optional |
+| Juni 2026 | `update_card`: fix duplicate RPC (2 versi beda tipe parameter — text vs character varying — di-drop, 1 recreate dengan TEXT) |
+| Juni 2026 | `delete_card`: tambah **SECURITY DEFINER** + cascade hapus `transactions` + `topups` (karena FK `transactions.card_id` NO ACTION) |
+| Juni 2026 | `is_admin`: dijadikan **SECURITY DEFINER** untuk cegah RLS recursion |
+| Juni 2026 | `cards.vehicle_id`: diubah dari `NOT NULL` jadi nullable. Sebelumnya `ALTER COLUMN vehicle_id DROP NOT NULL` — karena `delete_vehicle` perlu `UPDATE cards SET vehicle_id = NULL` |
+| Juni 2026 | `update_vehicle`: RPC baru **SECURITY DEFINER** + `SET search_path` |
+| Juni 2026 | `delete_vehicle`: RPC baru **SECURITY DEFINER** + `SET search_path` — handle UPDATE cards + DELETE transactions sebelum hapus vehicle |
+| Juni 2026 | `profiles(email)` dan `profiles(auth_user_id)`: ditambahkan UNIQUE constraint untuk cegah duplikasi |

@@ -29,6 +29,7 @@ export default function UserPage() {
   const [addCardLoading, setAddCardLoading] = useState(false);
   const [addCardMessage, setAddCardMessage] = useState({ type: '', text: '' });
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState('');
   const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
   
   // Modal Delete State
@@ -41,20 +42,6 @@ export default function UserPage() {
   const fetchData = async () => {
     setLoading(true);
     
-    // For development: if no profile, mock some data
-    if (!profile) {
-      setCards([
-        { id: '1', uid: '1A2B3C4D', balance: 150000, status: 'ACTIVE', vehicle: { plate_number: 'B 1234 ABC', vehicle_type: 'CAR' } },
-        { id: '2', uid: '9F8E7D6C', balance: 50000, status: 'ACTIVE', vehicle: { plate_number: 'D 5678 EFG', vehicle_type: 'CAR' } }
-      ]);
-      setTransactions([
-        { id: 't1', gate_in_name: 'Gerbang Tol Ancol', gate_out_name: 'Gerbang Tol Pluit', fee: 15000, status: 'COMPLETED', created_at: new Date().toISOString(), plate_number: 'B 1234 ABC' },
-        { id: 't2', gate_in_name: 'Gerbang Tol Pluit', gate_out_name: 'Gerbang Tol Bandara', fee: 20000, status: 'COMPLETED', created_at: new Date(Date.now() - 86400000).toISOString(), plate_number: 'B 1234 ABC' }
-      ]);
-      setLoading(false);
-      return;
-    }
-
     // Fetch Cards & Vehicles
     const { data: cardsData } = await supabase
       .from('cards')
@@ -154,15 +141,16 @@ export default function UserPage() {
       });
       const data = await response.json();
       if (!response.ok || data.error) {
-        alert(data.error || 'Terjadi kesalahan saat menghapus kartu');
+        setDeleteError(data.error || 'Terjadi kesalahan saat menghapus kartu');
       } else {
+        setDeleteError('');
         await fetchData();
       }
     } catch (err: any) {
       alert(err.message || 'Terjadi kesalahan pada server');
     } finally {
       setDeleteLoading(null);
-      setCardToDelete(null);
+      if (!deleteError) setCardToDelete(null);
     }
   };
 
@@ -457,9 +445,16 @@ export default function UserPage() {
               Apakah Anda yakin ingin menghapus kartu dengan nomor <strong className="text-foreground">{cardToDelete.uid}</strong>? Tindakan ini tidak dapat dibatalkan.
             </p>
             
+            {deleteError && (
+              <div className="mb-4 p-3 rounded-lg flex items-center gap-2 text-sm bg-destructive/10 text-destructive">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                {deleteError}
+              </div>
+            )}
+            
             <div className="flex justify-end gap-3">
               <button 
-                onClick={() => setCardToDelete(null)}
+                onClick={() => { setCardToDelete(null); setDeleteError(''); }}
                 disabled={deleteLoading !== null}
                 className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-lg transition-colors"
               >

@@ -68,7 +68,7 @@ export function ProfileView() {
                   <h2 className="text-lg font-bold text-foreground">{profile?.name || user?.email?.split('@')[0] || 'User'}</h2>
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-1 mt-1">
                     <span className="w-2 h-2 rounded-full bg-success" />
-                    {profile?.role === 'ADMIN' ? 'Administrator' : 'Pengguna'}
+                    {profile?.role === 'ADMIN' ? 'Administrator' : 'User'}
                   </p>
                 </div>
               </div>

@@ -105,6 +105,11 @@ npm install
 # isi .env.local dengan Supabase credentials
 npm run dev
 
+# Database Setup
+# Skema database, RPC functions, dan trigger sudah ada di Supabase.
+# Untuk informasi detail tentang tabel, views, RPC, dan arsitektur database,
+# lihat docs/DATABASE.md
+
 # Firmware (Arduino IDE)
 # 1. Buka file .ino MQTT yang sesuai
 # 2. Install library: PubSubClient, ArduinoJson, MFRC522, ESP32Servo, LiquidCrystal_I2C
