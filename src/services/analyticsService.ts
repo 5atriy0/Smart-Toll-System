@@ -1,88 +1,52 @@
-/**
- * Analytics Service
- * Abstraksi data layer untuk analytics & sensor data.
- * Saat ini menggunakan mock data dari lib/constants.
- * Siap diganti dengan real API (Supabase, REST, dll) di masa depan.
- */
+import { createClient } from "@/lib/supabase/client";
+import type { FullDashboardResult, AnalyticsWeekly, AnalyticsMonthly, ActiveGatesResult } from "@/lib/types/supabase";
 
-import {
-  MOCK_ANALYTICS_HOURLY,
-  MOCK_ANALYTICS_RATIO,
-  MOCK_SYSTEM_ERRORS,
-  MOCK_REVENUE,
-  MOCK_VEHICLES_IN_OUT,
-  MOCK_VEHICLES_INSIDE,
-  MOCK_AVG_SPEED,
-  MOCK_TRAVEL_TIME,
-} from '@/lib/constants';
-
-// -- Tipe Data --
-export interface WeeklyTrend {
-  day: string;
-  revenue: number;
-  volume: number;
+export async function getFullDashboard(): Promise<FullDashboardResult | null> {
+  const client = createClient();
+  const { data, error } = await client.rpc("get_full_dashboard");
+  if (error) {
+    console.error("getFullDashboard error:", error);
+    return null;
+  }
+  return data as unknown as FullDashboardResult;
 }
 
-export interface TodayMetrics {
-  totalVehicles: number;
-  vehiclesTrend: string;
-  revenue: number;
-  revenueTrend: string;
-  activeUsers: number;
-  usersTrend: string;
+export async function getWeeklyAnalytics(): Promise<AnalyticsWeekly[]> {
+  const client = createClient();
+  const { data, error } = await client
+    .from("analytics_weekly")
+    .select("*")
+    .order("week_start", { ascending: false });
+
+  if (error) {
+    console.error("getWeeklyAnalytics error:", error);
+    return [];
+  }
+  return data as AnalyticsWeekly[];
 }
 
-export interface Alert {
-  id: number;
-  type: string;
-  message: string;
-  time: string;
+export async function getMonthlyAnalytics(): Promise<AnalyticsMonthly[]> {
+  const client = createClient();
+  const { data, error } = await client
+    .from("analytics_monthly")
+    .select("*")
+    .order("month", { ascending: false });
+
+  if (error) {
+    console.error("getMonthlyAnalytics error:", error);
+    return [];
+  }
+  return data as AnalyticsMonthly[];
 }
 
-export interface SystemLog {
-  time: string;
-  message: string;
+export async function getActiveGates(dateFrom?: string): Promise<number> {
+  const client = createClient();
+  const params: Record<string, string> = {};
+  if (dateFrom) params.date_from = dateFrom;
+  const { data, error } = await client.rpc("get_active_gates", params);
+  if (error) {
+    console.error("getActiveGates error:", error);
+    return 0;
+  }
+  return (data as ActiveGatesResult) ?? 0;
 }
-
-// -- Service Functions --
-
-export function getHourlyAnalytics() {
-  return MOCK_ANALYTICS_HOURLY;
-}
-
-export function getAnalyticsRatio() {
-  return MOCK_ANALYTICS_RATIO;
-}
-
-export function getSystemErrors() {
-  return MOCK_SYSTEM_ERRORS;
-}
-
-export function getRevenue() {
-  return MOCK_REVENUE;
-}
-
-export function getVehiclesInOut() {
-  return MOCK_VEHICLES_IN_OUT;
-}
-
-export function getVehiclesInside() {
-  return MOCK_VEHICLES_INSIDE;
-}
-
-export function getAvgSpeed() {
-  return MOCK_AVG_SPEED;
-}
-
-export function getTravelTime() {
-  return MOCK_TRAVEL_TIME;
-}
-
-/**
- * Di masa depan, ganti implementasi di atas dengan:
- *
- * export async function getHourlyAnalytics() {
- *   const { data } = await supabase.from('analytics_hourly').select('*');
- *   return data;
- * }
- */

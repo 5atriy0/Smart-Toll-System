@@ -1,13 +1,5 @@
-// Transactions View Layout
-
-.container {
+.header {
   display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.content {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
 }

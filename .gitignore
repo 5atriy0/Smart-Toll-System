@@ -4,8 +4,6 @@
 /node_modules
 /.pnp
 .pnp.js
-/firmware
-/pipeline
 
 # testing
 /coverage
@@ -35,3 +33,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firmware / esp32
+/firmware/

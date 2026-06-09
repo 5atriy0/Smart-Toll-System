@@ -1,5 +1,5 @@
-import { UsersView } from '@/views/UsersView'
+import { redirect } from 'next/navigation'
 
 export default function UsersPage() {
-  return <UsersView />
+  redirect('/manajemen-akses/pengguna')
 }

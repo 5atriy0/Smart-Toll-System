@@ -1,59 +1,106 @@
-import { useState, useEffect } from 'react';
+"use client";
 
-// Mock weekly data
-const weeklyTrends = [
-  { day: 'Sen', revenue: 4000, volume: 240 },
-  { day: 'Sel', revenue: 3000, volume: 139 },
-  { day: 'Rab', revenue: 2000, volume: 980 },
-  { day: 'Kam', revenue: 2780, volume: 390 },
-  { day: 'Jum', revenue: 1890, volume: 480 },
-  { day: 'Sab', revenue: 2390, volume: 380 },
-  { day: 'Min', revenue: 3490, volume: 430 },
-];
+import { useState, useEffect } from "react";
+import { getFullDashboard } from "@/services/analyticsService";
+import { getTransactions } from "@/services/transactionService";
+import type { FullDashboardResult } from "@/lib/types/supabase";
 
-export function useAnalytics() {
-  const [trendData, setTrendData] = useState(weeklyTrends);
-  const [esp32Status, setEsp32Status] = useState<'Online' | 'Offline' | 'Error'>('Online');
-  const [systemLogs, setSystemLogs] = useState([
-    { time: '10:45:02', message: 'Gateway ESP32 berhasil terhubung.' },
-    { time: '10:48:15', message: 'Pembaca RFID disinkronkan.' }
-  ]);
-  
-  const [recentAlerts, setRecentAlerts] = useState([
-    { id: 1, type: 'warning', message: 'Halangan sensor terdeteksi > 10d di Gerbang A', time: '5 mnt lalu' },
-    { id: 2, type: 'error', message: 'Pemindaian RFID tidak valid 3 kali di Gerbang B', time: '15 mnt lalu' },
-    { id: 3, type: 'info', message: 'Pencadangan database harian berhasil diselesaikan', time: '1 jam lalu' },
-  ]);
+function computeDateFrom(range: string): string | undefined {
+  const now = new Date();
+  if (range === "Hari Ini") {
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  }
+  if (range === "7 Hari Terakhir") {
+    const d = new Date(); d.setDate(now.getDate() - 7); return d.toISOString();
+  }
+  if (range === "Bulan Ini") {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  }
+  return undefined;
+}
 
-  const [todayMetrics, setTodayMetrics] = useState({
-    totalVehicles: 420,
-    vehiclesTrend: '+15%',
-    revenue: 8400000,
-    revenueTrend: '+8%',
-    activeUsers: 1248,
-    usersTrend: '+12'
-  });
+const DATE_LABELS: Record<string, string> = {
+  "Hari Ini": "Hari Ini",
+  "7 Hari Terakhir": "7 Hari",
+  "Bulan Ini": "Bulan Ini",
+  "Semua Waktu": "Semua Waktu",
+};
+
+export const useAnalytics = (dateRange: string = "Hari Ini") => {
+  const [stats, setStats] = useState<{
+    totalUsers: number;
+    totalVehicles: number;
+    revenue: number;
+    avgSpeed: number;
+    avgDuration: number;
+  }>({ totalUsers: 0, totalVehicles: 0, revenue: 0, avgSpeed: 0, avgDuration: 0 });
+  const [dashboardData, setDashboardData] = useState<FullDashboardResult | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    const [dashboardData, txResult] = await Promise.all([
+      getFullDashboard(),
+      getTransactions({ dateFrom: computeDateFrom(dateRange), limit: 5000 }),
+    ]);
+
+    const txList = txResult?.data || [];
+    const filteredRevenue = txList.reduce((sum, tx) => sum + (tx.fee || 0), 0);
+
+    const txWithSpeed = txList.filter((tx) => tx.average_speed != null);
+    const filteredAvgSpeed = txWithSpeed.length > 0
+      ? txWithSpeed.reduce((sum, tx) => sum + tx.average_speed, 0) / txWithSpeed.length
+      : dateRange === "Hari Ini" ? dashboardData?.stats.today_avg_speed || 0 : 0;
+
+    const txWithDuration = txList.filter((tx) => tx.duration_minutes != null);
+    const filteredAvgDuration = txWithDuration.length > 0
+      ? txWithDuration.reduce((sum, tx) => sum + tx.duration_minutes, 0) / txWithDuration.length
+      : dateRange === "Hari Ini" ? dashboardData?.stats.today_avg_duration || 0 : 0;
+
+    setStats({
+      totalUsers: dashboardData?.stats.total_users ?? 0,
+      totalVehicles: dashboardData?.stats.total_vehicles ?? 0,
+      revenue: filteredRevenue,
+      avgSpeed: filteredAvgSpeed,
+      avgDuration: filteredAvgDuration,
+    });
+    setDashboardData(dashboardData);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    // Simulate real-time logs coming in
-    const interval = setInterval(() => {
-      const now = new Date();
-      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-      setSystemLogs(prev => [
-        { time: timeStr, message: `Ping diterima dari Node Sensor ${Math.floor(Math.random() * 3) + 1}.` },
-        ...prev
-      ].slice(0, 10)); // Keep last 10 logs
-    }, 15000);
+    fetchAll();
+  }, [dateRange]);
 
-    return () => clearInterval(interval);
-  }, []);
+  const tf = DATE_LABELS[dateRange] || dateRange;
+
+  const todayMetrics = {
+    totalUsers: stats.totalUsers,
+    totalVehicles: stats.totalVehicles,
+    revenue: stats.revenue,
+    avgSpeed: stats.avgSpeed,
+    avgDuration: stats.avgDuration,
+    userLabel: "Total Pengguna",
+    revenueLabel: `Pendapatan (${tf})`,
+    vehicleLabel: "Kendaraan Terdaftar",
+    speedLabel: `Kecepatan Rata-rata (${tf})`,
+    durationLabel: `Waktu Tempuh (${tf})`,
+  };
+
+  const recentAlerts = [
+    { id: 1, type: "info" as const, message: "Sistem berjalan normal", time: "1 jam lalu" },
+  ];
+
+  const systemLogs = [
+    { time: new Date().toLocaleTimeString(), message: "Sistem aktif" },
+  ];
 
   return {
-    trendData,
-    esp32Status,
-    setEsp32Status, // To allow manual testing/toggling
-    systemLogs,
+    todayMetrics,
     recentAlerts,
-    todayMetrics
+    systemLogs,
+    esp32Status: "Online" as const,
+    dashboardData,
+    loading,
   };
-}
+};

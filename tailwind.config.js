@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -15,6 +16,10 @@ module.exports = {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },
+        accent: {
+          DEFAULT: 'hsl(var(--accent))',
+          foreground: 'hsl(var(--accent-foreground))',
+        },
         success: {
           DEFAULT: 'hsl(var(--success))',
           foreground: 'hsl(var(--success-foreground))',
@@ -22,6 +27,14 @@ module.exports = {
         danger: {
           DEFAULT: 'hsl(var(--danger))',
           foreground: 'hsl(var(--danger-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        topup: {
+          DEFAULT: 'hsl(var(--topup))',
+          foreground: 'hsl(var(--topup-foreground))',
         },
         card: {
           DEFAULT: 'hsl(var(--card))',
@@ -32,6 +45,14 @@ module.exports = {
           foreground: 'hsl(var(--muted-foreground))',
         },
         border: 'hsl(var(--border))',
+        sidebar: {
+          bg: 'hsl(var(--sidebar-bg))',
+          fg: 'hsl(var(--sidebar-fg))',
+          active: 'hsl(var(--sidebar-active))',
+        },
+      },
+      fontFamily: {
+        sora: ['var(--font-sora)', 'system-ui', 'sans-serif'],
       },
     },
   },

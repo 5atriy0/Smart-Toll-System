@@ -1,121 +1,100 @@
-// ==============================================
-// Design Tokens & Variables
-// Mirror dari CSS custom properties di globals.css
-// ==============================================
+@use 'sass:color';
 
-// -- Color Palette (HSL Values) --
-$bg-h: 216;
-$bg-s: 28%;
-$bg-l: 7%;
+// ── Color Palette (HSL) ──
+$bg-h: 48; $bg-s: 6%; $bg-l: 95%;
+$fg-h: 0; $fg-s: 0%; $fg-l: 10%;
+$primary-h: 215; $primary-s: 52%; $primary-l: 22%;
+$accent-h: 38; $accent-s: 91%; $accent-l: 41%;
+$success-h: 210; $success-s: 60%; $success-l: 45%;
+$danger-h: 0; $danger-s: 84%; $danger-l: 60%;
+$warning-h: 38; $warning-s: 91%; $warning-l: 41%;
+$card-h: 0; $card-s: 0%; $card-l: 100%;
+$muted-h: 220; $muted-s: 14%; $muted-l: 96%;
+$muted-fg-h: 220; $muted-fg-s: 9%; $muted-fg-l: 46%;
+$border-h: 220; $border-s: 13%; $border-l: 91%;
 
-$fg-h: 210;
-$fg-s: 40%;
-$fg-l: 98%;
+.dark {
+  --bg-h: 215; --bg-s: 55%; --bg-l: 11%;
+  --fg-h: 40; --fg-s: 5%; --fg-l: 92%;
+  --primary-h: 215; --primary-s: 40%; --primary-l: 35%;
+  --card-h: 215; --card-s: 42%; --card-l: 14%;
+  --muted-h: 215; --muted-s: 35%; --muted-l: 20%;
+  --muted-fg-h: 215; --muted-fg-s: 15%; --muted-fg-l: 60%;
+  --border-h: 215; --border-s: 35%; --border-l: 22%;
+}
 
-$primary-h: 212;
-$primary-s: 100%;
-$primary-l: 48%;
-
-$success-h: 154;
-$success-s: 61%;
-$success-l: 43%;
-
-$danger-h: 0;
-$danger-s: 84%;
-$danger-l: 60%;
-
-$card-h: 216;
-$card-s: 28%;
-$card-l: 12%;
-
-$muted-h: 215;
-$muted-s: 28%;
-$muted-l: 17%;
-
-$muted-fg-h: 215;
-$muted-fg-s: 20%;
-$muted-fg-l: 65%;
-
-$border-h: 215;
-$border-s: 30%;
-$border-l: 18%;
-
-// -- Semantic Colors (as HSL functions) --
 $color-background: hsl($bg-h, $bg-s, $bg-l);
 $color-foreground: hsl($fg-h, $fg-s, $fg-l);
 $color-primary: hsl($primary-h, $primary-s, $primary-l);
+$color-accent: hsl($accent-h, $accent-s, $accent-l);
 $color-success: hsl($success-h, $success-s, $success-l);
 $color-danger: hsl($danger-h, $danger-s, $danger-l);
+$color-warning: hsl($warning-h, $warning-s, $warning-l);
 $color-card: hsl($card-h, $card-s, $card-l);
 $color-muted: hsl($muted-h, $muted-s, $muted-l);
 $color-muted-fg: hsl($muted-fg-h, $muted-fg-s, $muted-fg-l);
 $color-border: hsl($border-h, $border-s, $border-l);
 
-// -- Typography --
-$font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+// ── Typography ──
+$font-family-base: 'Sora', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 $font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
 
-$font-size-xs: 0.75rem;    // 12px
-$font-size-sm: 0.875rem;   // 14px
-$font-size-base: 1rem;     // 16px
-$font-size-lg: 1.125rem;   // 18px
-$font-size-xl: 1.25rem;    // 20px
-$font-size-2xl: 1.5rem;    // 24px
-$font-size-3xl: 1.875rem;  // 30px
+$font-size-xs: 0.75rem;
+$font-size-sm: 0.875rem;
+$font-size-base: 1rem;
+$font-size-lg: 1.125rem;
+$font-size-xl: 1.25rem;
+$font-size-2xl: 1.5rem;
+$font-size-3xl: 1.875rem;
 
 $font-weight-normal: 400;
 $font-weight-medium: 500;
 $font-weight-semibold: 600;
 $font-weight-bold: 700;
 
-// -- Spacing --
-$spacing-1: 0.25rem;  // 4px
-$spacing-2: 0.5rem;   // 8px
-$spacing-3: 0.75rem;  // 12px
-$spacing-4: 1rem;     // 16px
-$spacing-5: 1.25rem;  // 20px
-$spacing-6: 1.5rem;   // 24px
-$spacing-8: 2rem;     // 32px
-$spacing-10: 2.5rem;  // 40px
-$spacing-12: 3rem;    // 48px
+// ── Spacing ──
+$spacing-1: 0.25rem;
+$spacing-2: 0.5rem;
+$spacing-3: 0.75rem;
+$spacing-4: 1rem;
+$spacing-5: 1.25rem;
+$spacing-6: 1.5rem;
+$spacing-8: 2rem;
+$spacing-10: 2.5rem;
+$spacing-12: 3rem;
 
-// -- Border Radius --
+// ── Border Radius ──
 $radius-sm: 0.25rem;
 $radius-md: 0.5rem;
 $radius-lg: 0.75rem;
 $radius-xl: 1rem;
-$radius-2xl: 1.5rem;
-$radius-full: 9999px;
 
-// -- Shadows --
+// ── Shadows ──
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 $shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
 $shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
 $shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-$shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 
-// -- Transitions --
+// ── Transitions ──
 $transition-fast: 150ms ease;
 $transition-base: 200ms ease;
 $transition-slow: 300ms ease;
-$transition-slower: 500ms ease;
 
-// -- Breakpoints --
+// ── Breakpoints ──
 $breakpoint-sm: 640px;
 $breakpoint-md: 768px;
 $breakpoint-lg: 1024px;
 $breakpoint-xl: 1280px;
-$breakpoint-2xl: 1536px;
 
-// -- Z-Index Scale --
+// ── Z-Index ──
 $z-dropdown: 10;
 $z-sticky: 20;
 $z-fixed: 30;
 $z-overlay: 40;
 $z-modal: 50;
-$z-popover: 60;
-$z-tooltip: 70;
+$z-tooltip: 60;
 
-// -- Layout --
-$sidebar-width: 16rem;  // 256px / w-64
-$header-height: 4rem;   // 64px / h-16
+// ── Layout ──
+$sidebar-width: 15rem;
+$sidebar-collapsed-width: 3.75rem;
+$header-height: 4rem;
