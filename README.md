@@ -122,15 +122,22 @@ npm run dev
 - Admin bisa **reset password** user lain (via modal Detail Pengguna → Reset Password)
 - User registrasi mandiri → role `USER`, hanya bisa akses `/user/*`
 
-## Dashboard Filtering
+## Dashboard Layout
 
-Dashboard punya filter waktu di bagian atas: **Hari Ini | 7 Hari Terakhir | Bulan Ini | Semua Waktu**
-
-Filter ini mengubah:
+### Filter Waktu
+Filter **Hari Ini | 7 Hari Terakhir | Bulan Ini | Semua Waktu** di atas mengubah:
 - **Pendapatan** — dihitung dari transaksi di periode terpilih
 - **Kecepatan Rata-rata** & **Waktu Tempuh** — dari transaksi di periode
 - **Transaksi Terbaru** — tabel ikut terfilter
-- **Total Pengguna** & **Kendaraan Terdaftar** — tetap all-time (tidak berubah)
+- **Total Pengguna** & **Kendaraan Terdaftar** — tetap all-time
+
+### Komponen Dashboard
+1. **Compact Stat Cards** (5 kartu dengan warna variatif) — tanpa sparkline
+2. **Mini Charts** — Volume Per Jam (BarChart) + Tren Pendapatan (LineChart)
+3. **Transaksi Terbaru** — tabel dengan kolom Waktu (relative), UID, Plat, Rute, Tarif, Status
+4. **Pintasan Cepat** — navigasi ke halaman Pengguna, Transaksi, Analitik, Pengaturan
+
+> Notifikasi/peringatan & status gateway dihapus untuk menjaga fokus pada data inti.
 
 ## Proteksi Route
 

@@ -168,16 +168,33 @@ export const addCard = async (params: {
 
 export const updateCard = async (params: {
   p_card_id: string;
+  p_uid?: string;
   p_balance?: number;
   p_status?: string;
   p_vehicle_id?: string;
 }) => {
   const supabase = createClient();
+  let error = null;
+
+  if (params.p_uid !== undefined) {
+    const { error: uidError } = await supabase
+      .from("cards")
+      .update({ uid: params.p_uid })
+      .eq("id", params.p_card_id);
+    error = uidError;
+  }
+
   const clean: Record<string, unknown> = { p_card_id: params.p_card_id };
   if (params.p_balance !== undefined) clean.p_balance = params.p_balance;
   if (params.p_status !== undefined) clean.p_status = params.p_status;
   if (params.p_vehicle_id !== undefined) clean.p_vehicle_id = params.p_vehicle_id;
-  const { error } = await supabase.rpc("update_card", clean);
+
+  const hasRpcFields = Object.keys(clean).length > 1;
+  if (hasRpcFields) {
+    const { error: rpcError } = await supabase.rpc("update_card", clean);
+    if (!error) error = rpcError;
+  }
+
   return { error };
 };
 

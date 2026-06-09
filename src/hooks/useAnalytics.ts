@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getFullDashboard } from "@/services/analyticsService";
 import { getTransactions } from "@/services/transactionService";
+import type { FullDashboardResult } from "@/lib/types/supabase";
 
 function computeDateFrom(range: string): string | undefined {
   const now = new Date();
@@ -33,6 +34,7 @@ export const useAnalytics = (dateRange: string = "Hari Ini") => {
     avgSpeed: number;
     avgDuration: number;
   }>({ totalUsers: 0, totalVehicles: 0, revenue: 0, avgSpeed: 0, avgDuration: 0 });
+  const [dashboardData, setDashboardData] = useState<FullDashboardResult | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchAll = async () => {
@@ -62,6 +64,7 @@ export const useAnalytics = (dateRange: string = "Hari Ini") => {
       avgSpeed: filteredAvgSpeed,
       avgDuration: filteredAvgDuration,
     });
+    setDashboardData(dashboardData);
     setLoading(false);
   };
 
@@ -97,6 +100,7 @@ export const useAnalytics = (dateRange: string = "Hari Ini") => {
     recentAlerts,
     systemLogs,
     esp32Status: "Online" as const,
+    dashboardData,
     loading,
   };
 };

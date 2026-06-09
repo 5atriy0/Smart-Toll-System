@@ -50,7 +50,7 @@
 | `update_card_status` | `void` | `p_card_uid text`, `p_status` (USER-DEFINED) | Ubah status kartu |
 | `create_user_with_card` | `uuid` | `p_name text`, `p_email text`, `p_role` (USER-DEFINED), `p_uid text?`, `p_plate_number text?`, `p_vehicle_type` (USER-DEFINED?) | Buat profil + opsional kendaraan + kartu 1x transaksi. `p_uid`, `p_plate_number`, `p_vehicle_type` dibuat optional untuk fleksibilitas (admin bisa daftarkan user tanpa UID dulu) |
 | `add_card` | `uuid` | `p_profile_id uuid`, `p_uid text`, `p_vehicle_id uuid`, `p_balance numeric` | Tambah kartu RFID baru |
-| `update_card` | `void` | `p_card_id uuid`, `p_balance numeric`, `p_status text`, `p_vehicle_id uuid` | Update field kartu |
+| `update_card` | `void` | `p_card_id uuid`, `p_balance numeric`, `p_status text`, `p_vehicle_id uuid` | Update field kartu (UID tidak bisa via RPC — dilakukan direct table `cards.uid` dari service) |
 | `delete_card` | `void` | `p_card_id uuid` | Hapus kartu berdasarkan ID. **SECURITY DEFINER** (bypass RLS). Cascade: hapus `transactions` + `topups` terkait sebelum hapus kartu — karena FK `transactions.card_id` pakai NO ACTION |
 | `update_vehicle` | `void` | `p_vehicle_id uuid`, `p_plate_number text?`, `p_vehicle_type text?`, `p_brand text?`, `p_color text?` | Update field kendaraan. **SECURITY DEFINER** + `SET search_path = public` |
 | `delete_vehicle` | `void` | `p_vehicle_id uuid` | Hapus kendaraan. **SECURITY DEFINER** + `SET search_path = public`. Cascade: UPDATE `cards SET vehicle_id = NULL` lalu DELETE `transactions` (karena NO ACTION) lalu hapus `vehicles` |
@@ -66,6 +66,14 @@
 | `handle_new_user` | `trigger` | — | Trigger: auto-create profile pas user daftar |
 | `process_topup` | `trigger` | — | Trigger: tambah saldo otomatis pas insert topup |
 | `process_transaction_completion` | `trigger` | — | Trigger: kurangin saldo otomatis pas transaksi selesai |
+
+### Client-side direct update pattern
+
+Beberapa operasi tidak bisa dilakukan via RPC dan menggunakan **supabase client langsung ke tabel** dari service layer:
+
+| Operasi | Alasan | File |
+|---------|--------|------|
+| `cards.uid` update | `update_card` RPC tidak punya parameter `p_uid` | `src/services/cardService.ts` — `updateCard()` → `supabase.from("cards").update({ uid })` |
 
 ### Catatan parameter function
 
@@ -100,6 +108,7 @@
 
 | Tanggal | Perubahan |
 |---------|-----------|
+| 10 Juni 2026 | `updateCard` service — tambah dukungan `p_uid` via direct table `cards.uid` (karena RPC `update_card` tidak support) |
 | 9 Juni 2026 | Dokumentasi awal (berdasarkan query `information_schema`) |
 | Juni 2026 | `create_user_with_card`: parameter `p_uid`, `p_plate_number`, `p_vehicle_type` dijadikan optional |
 | Juni 2026 | `update_card`: fix duplicate RPC (2 versi beda tipe parameter — text vs character varying — di-drop, 1 recreate dengan TEXT) |

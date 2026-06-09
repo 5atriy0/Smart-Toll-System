@@ -2,50 +2,33 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, Car, TrendingUp, Clock, Gauge, ArrowUp, ArrowDown, Activity, AlertTriangle, Wrench } from 'lucide-react'
+import { Users, Car, TrendingUp, Clock, Gauge, Activity, Wrench } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
 import { getTransactions } from '@/services/transactionService'
-import { SkeletonCard } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
+import { LineChart, Line, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
 
 const DATE_OPTIONS = ['Hari Ini', '7 Hari Terakhir', 'Bulan Ini', 'Semua Waktu']
 
-type StatCardProps = {
-  title: string
-  value: string
-  icon: React.ReactNode
-  trend?: { direction: 'up' | 'down'; label: string }
-  loading?: boolean
-}
+const CARD_COLORS = [
+  { bg: 'rgba(180,83,9,0.1)', text: '#B45309' },
+  { bg: 'rgba(37,99,235,0.1)', text: '#2563EB' },
+  { bg: 'rgba(5,146,105,0.1)', text: '#059669' },
+  { bg: 'rgba(124,58,237,0.1)', text: '#7C3AED' },
+  { bg: 'rgba(219,39,119,0.1)', text: '#DB2777' },
+]
 
-function StatCard({ title, value, icon, trend, loading }: StatCardProps) {
-  if (loading) return <SkeletonCard />;
-
-  return (
-    <div
-      className="relative rounded-xl bg-card border border-border p-5 transition-all duration-200 hover:translate-y-[-2px] hover:shadow-md group cursor-default"
-      style={{ borderLeft: '3px solid hsl(var(--accent))' }}
-    >
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{title}</span>
-        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary/15 transition-colors">
-          {icon}
-        </div>
-      </div>
-      <div className="text-2xl font-bold text-foreground tracking-tight mb-1">{value}</div>
-      {trend && (
-        <div className="flex items-center gap-1 text-xs">
-          {trend.direction === 'up' ? (
-            <ArrowUp className="w-3 h-3" style={{ color: 'hsl(var(--accent))' }} />
-          ) : (
-            <ArrowDown className="w-3 h-3 text-danger" />
-          )}
-          <span className={trend.direction === 'up' ? 'text-accent' : 'text-danger'}>{trend.label}</span>
-        </div>
-      )}
-    </div>
-  );
+function relativeTime(date: Date | null): string {
+  if (!date) return '-'
+  const diff = Date.now() - date.getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Baru saja'
+  if (mins < 60) return `${mins} mnt lalu`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours} jam lalu`
+  const days = Math.floor(hours / 24)
+  return `${days} hari lalu`
 }
 
 const parseUTC = (ts: string | null) => {
@@ -71,11 +54,25 @@ const computeDateFrom = (range: string): string | undefined => {
   return undefined;
 };
 
+function CompactStat({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: typeof CARD_COLORS[number] }) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg bg-card border border-border p-3" style={{ borderLeft: `3px solid ${color.text}` }}>
+      <div className="w-8 h-8 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: color.bg, color: color.text }}>
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground truncate">{label}</p>
+        <p className="text-sm font-semibold text-foreground">{value}</p>
+      </div>
+    </div>
+  )
+}
+
 export function DashboardView() {
   const [dateRange, setDateRange] = useState('Hari Ini');
   const [txLogs, setTxLogs] = useState<any[]>([]);
   const [txLoading, setTxLoading] = useState(true);
-  const { todayMetrics, recentAlerts, esp32Status, loading: analyticsLoading } = useAnalytics(dateRange);
+  const { todayMetrics, dashboardData, loading: analyticsLoading } = useAnalytics(dateRange);
 
   const loading = txLoading || analyticsLoading;
 
@@ -93,9 +90,12 @@ export function DashboardView() {
             id: item.id,
             timeIn: tapInDate?.toLocaleString() ?? "-",
             timeOut: tapOutDate?.toLocaleString() ?? "-",
-            rawTime: item.tap_in_time,
+            relativeTime: relativeTime(tapInDate),
+            relativeOut: relativeTime(tapOutDate),
             loc: `${item.gate_in_name || "-"} → ${item.gate_out_name || "-"}`,
             uid: item.uid,
+            plate: item.plate_number,
+            fee: item.fee ?? 0,
             status: statusLabel,
           };
         }));
@@ -107,39 +107,8 @@ export function DashboardView() {
   }, [dateRange]);
 
   const recentTx = [...txLogs].slice(0, 5);
-
-  const metricCards = [
-    {
-      title: todayMetrics.userLabel,
-      value: todayMetrics.totalUsers.toString(),
-      icon: <Users className="w-4 h-4" />,
-      loading,
-    },
-    {
-      title: todayMetrics.revenueLabel,
-      value: `Rp ${(todayMetrics.revenue || 0).toLocaleString()}`,
-      icon: <TrendingUp className="w-4 h-4" />,
-      loading,
-    },
-    {
-      title: todayMetrics.vehicleLabel,
-      value: todayMetrics.totalVehicles.toString(),
-      icon: <Car className="w-4 h-4" />,
-      loading,
-    },
-    {
-      title: todayMetrics.speedLabel,
-      value: `${todayMetrics.avgSpeed.toFixed(1)} km/h`,
-      icon: <Gauge className="w-4 h-4" />,
-      loading,
-    },
-    {
-      title: todayMetrics.durationLabel,
-      value: `${todayMetrics.avgDuration.toFixed(1)} mnt`,
-      icon: <Clock className="w-4 h-4" />,
-      loading,
-    },
-  ];
+  const miniChartData = dashboardData?.hourly_volume ?? [];
+  const revenueTrendData = dashboardData?.revenue_trend ?? [];
 
   return (
     <div className="space-y-6">
@@ -166,11 +135,83 @@ export function DashboardView() {
         </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {metricCards.map((m, i) => (
-          <StatCard key={i} {...m} />
-        ))}
+      {/* Compact Stats Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <CompactStat
+          icon={<Users className="w-4 h-4" />}
+          label={todayMetrics.userLabel}
+          value={todayMetrics.totalUsers.toString()}
+          color={CARD_COLORS[0]}
+        />
+        <CompactStat
+          icon={<TrendingUp className="w-4 h-4" />}
+          label={todayMetrics.revenueLabel}
+          value={`Rp ${(todayMetrics.revenue || 0).toLocaleString()}`}
+          color={CARD_COLORS[1]}
+        />
+        <CompactStat
+          icon={<Car className="w-4 h-4" />}
+          label={todayMetrics.vehicleLabel}
+          value={todayMetrics.totalVehicles.toString()}
+          color={CARD_COLORS[2]}
+        />
+        <CompactStat
+          icon={<Gauge className="w-4 h-4" />}
+          label={todayMetrics.speedLabel}
+          value={`${todayMetrics.avgSpeed.toFixed(1)} km/h`}
+          color={CARD_COLORS[3]}
+        />
+        <CompactStat
+          icon={<Clock className="w-4 h-4" />}
+          label={todayMetrics.durationLabel}
+          value={`${todayMetrics.avgDuration.toFixed(1)} mnt`}
+          color={CARD_COLORS[4]}
+        />
+      </div>
+
+      {/* Mini Charts Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-border shadow-sm">
+          <CardHeader className="border-b border-border pb-3">
+            <CardTitle className="text-sm font-semibold">Volume Per Jam</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={miniChartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                  />
+                  <Bar dataKey="volume" fill="#B45309" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border shadow-sm">
+          <CardHeader className="border-b border-border pb-3">
+            <CardTitle className="text-sm font-semibold">Tren Pendapatan</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4">
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={revenueTrendData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                  />
+                  <Line type="monotone" dataKey="revenue" stroke="#2563EB" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Recent Transactions */}
@@ -195,16 +236,25 @@ export function DashboardView() {
                   <tr>
                     <th className="px-5 py-3.5 font-medium">Waktu</th>
                     <th className="px-5 py-3.5 font-medium">UID</th>
+                    <th className="px-5 py-3.5 font-medium">Plat</th>
                     <th className="px-5 py-3.5 font-medium">Rute</th>
+                    <th className="px-5 py-3.5 font-medium text-right">Tarif</th>
                     <th className="px-5 py-3.5 font-medium text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
                   {recentTx.map((log) => (
                     <tr key={log.id} className="hover:bg-primary/5 transition-colors">
-                      <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground">{log.timeIn}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap font-mono text-foreground">{log.uid}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground">{log.loc}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap">
+                        <span className="text-foreground font-medium">{log.relativeTime}</span>
+                        <span className="text-muted-foreground ml-1.5 text-xs">{log.timeIn}</span>
+                      </td>
+                      <td className="px-5 py-3.5 whitespace-nowrap font-mono text-xs text-foreground">{log.uid}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground">{log.plate || '-'}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground text-xs">{log.loc}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap text-right font-medium text-foreground">
+                        Rp {log.fee.toLocaleString()}
+                      </td>
                       <td className="px-5 py-3.5 whitespace-nowrap text-right">
                         <span className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-medium border ${
                           log.status === 'SELESAI'
@@ -224,66 +274,6 @@ export function DashboardView() {
           )}
         </CardContent>
       </Card>
-
-      {/* Alerts & Gate Control */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Alerts */}
-        <Card className="md:col-span-2 border-border shadow-sm">
-          <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-accent" />
-              Notifikasi & Peringatan
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 space-y-2">
-            {recentAlerts.length === 0 ? (
-              <div className="text-sm text-muted-foreground text-center py-4">Tidak ada notifikasi</div>
-            ) : (
-              recentAlerts.map((a) => (
-                <div key={a.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
-                    a.type === 'warning' ? 'bg-accent' : a.type === 'error' ? 'bg-danger' : 'bg-success'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground">{a.message}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">{a.time}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {/* ESP32 Status Card */}
-        <Card className="border-border shadow-sm">
-          <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-accent" />
-              Status Gateway
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-5 flex flex-col items-center gap-4">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 ${
-              esp32Status === 'Online' ? 'border-success text-success' : 'border-danger text-danger'
-            }`}>
-              <Activity className="w-7 h-7" />
-            </div>
-            <span className={`text-lg font-bold ${
-              esp32Status === 'Online' ? 'text-success' : 'text-danger'
-            }`}>
-              {esp32Status === 'Online' ? 'ONLINE' : 'OFFLINE'}
-            </span>
-            <p className="text-xs text-muted-foreground">ESP32 Gateway</p>
-            <Link
-              href="/settings"
-              className="w-full text-center py-2 rounded-lg text-sm font-medium transition-colors"
-              style={{ backgroundColor: 'hsl(var(--primary))', color: 'white' }}
-            >
-              Buka Pengaturan
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Quick Shortcuts */}
       <div>
