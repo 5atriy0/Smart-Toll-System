@@ -9,13 +9,14 @@ import {
   Activity,
   BarChart3,
   Settings,
+  ShieldCheck,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, href: '/dashboard', label: 'Dashboard' },
-  { icon: Users, href: '/users', label: 'Pengguna' },
+  { icon: ShieldCheck, href: '/manajemen-akses', label: 'Manajemen Akses' },
   { icon: Activity, href: '/transactions', label: 'Transaksi' },
   { icon: BarChart3, href: '/analytics', label: 'Analitik' },
   { icon: Settings, href: '/settings', label: 'Pengaturan' },
@@ -29,19 +30,18 @@ export function Sidebar() {
     <>
       {/* Desktop Sidebar */}
       <aside
-        className={`hidden md:flex flex-col h-full transition-all duration-250 ease-out relative z-30 ${
-          collapsed ? 'w-[3.75rem]' : 'w-60'
-        }`}
+        className={`hidden md:flex flex-col h-full transition-all duration-250 ease-out relative z-30 ${collapsed ? 'w-[3.75rem]' : 'w-60'
+          }`}
         style={{ backgroundColor: 'hsl(var(--sidebar-bg))' }}
       >
         {/* Logo */}
         <div className={`flex items-center h-16 px-4 border-b border-white/10 ${collapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'hsl(var(--sidebar-active))' }}>
             <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-              <rect x="4" y="6" width="24" height="20" rx="3" stroke="white" strokeWidth="2.5" fill="none"/>
-              <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="white" strokeWidth="1.8" fill="none"/>
-              <line x1="14" y1="16" x2="18" y2="16" stroke="white" strokeWidth="2"/>
-              <line x1="16" y1="14" x2="16" y2="18" stroke="white" strokeWidth="2"/>
+              <rect x="4" y="6" width="24" height="20" rx="3" stroke="white" strokeWidth="2.5" fill="none" />
+              <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="white" strokeWidth="1.8" fill="none" />
+              <line x1="14" y1="16" x2="18" y2="16" stroke="white" strokeWidth="2" />
+              <line x1="16" y1="14" x2="16" y2="18" stroke="white" strokeWidth="2" />
             </svg>
           </div>
           {!collapsed && (
@@ -57,11 +57,10 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                  active
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${active
                     ? 'text-white font-medium'
                     : 'text-white/60 hover:text-white/90 hover:bg-white/5'
-                }`}
+                  }`}
                 title={collapsed ? item.label : undefined}
               >
                 {active && (
@@ -86,9 +85,8 @@ export function Sidebar() {
         <div className="px-2 py-2 border-t border-white/10">
           <button
             onClick={() => setCollapsed(!collapsed)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5 ${
-              collapsed ? 'justify-center' : ''
-            }`}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-white/60 hover:text-white hover:bg-white/5 ${collapsed ? 'justify-center' : ''
+              }`}
             title={collapsed ? 'Perluas' : 'Sembunyikan'}
           >
             {collapsed ? (
@@ -107,10 +105,10 @@ export function Sidebar() {
           {collapsed ? (
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'hsl(var(--sidebar-active))' }}>
               <svg width="16" height="16" viewBox="0 0 32 32" fill="none">
-                <rect x="4" y="6" width="24" height="20" rx="3" stroke="white" strokeWidth="2.5" fill="none"/>
-                <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="white" strokeWidth="1.8" fill="none"/>
-                <line x1="14" y1="16" x2="18" y2="16" stroke="white" strokeWidth="2"/>
-                <line x1="16" y1="14" x2="16" y2="18" stroke="white" strokeWidth="2"/>
+                <rect x="4" y="6" width="24" height="20" rx="3" stroke="white" strokeWidth="2.5" fill="none" />
+                <rect x="11" y="11" width="10" height="10" rx="1.5" stroke="white" strokeWidth="1.8" fill="none" />
+                <line x1="14" y1="16" x2="18" y2="16" stroke="white" strokeWidth="2" />
+                <line x1="16" y1="14" x2="16" y2="18" stroke="white" strokeWidth="2" />
               </svg>
             </div>
           ) : (
@@ -133,9 +131,8 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-0 ${
-                active ? 'text-white' : 'text-white/50'
-              }`}
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors min-w-0 ${active ? 'text-white' : 'text-white/50'
+                }`}
             >
               <item.icon className="w-5 h-5" />
               <span className="text-[10px] leading-tight">{item.label}</span>

@@ -133,6 +133,13 @@ export function LoginView() {
     }
   };
 
+  const [banned, setBanned] = useState(false);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBanned(window.location.search.includes('banned=true'));
+    }
+  }, []);
+
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -194,6 +201,13 @@ export function LoginView() {
           {/* ────── LOGIN FORM ────── */}
           {mode === 'login' && (
             <form onSubmit={(e) => { if (isFormValid) handleLogin(e); else e.preventDefault(); }} className={styles.form}>
+              {banned && (
+                <div className={styles.bannedBox}>
+                  <AlertTriangle className={styles.bannedIcon} />
+                  <p className={styles.bannedTitle}>Akun Tidak Aktif</p>
+                  <p className={styles.bannedDesc}>Akun Anda telah dinonaktifkan. Silakan hubungi administrator.</p>
+                </div>
+              )}
               <div className={styles.field}>
                 <label className={styles.label}>Email</label>
                 <div className={styles.inputWrapper}>

@@ -158,7 +158,7 @@ export function SystemSettings() {
                     Mode Pemeliharaan
                   </label>
                   <p className="text-xs text-muted-foreground">
-                    Menolak semua pemindaian RFID dan mengaktifkan indikator LED merah/Buzzer.
+                    Menolak semua pemindaian UID dan mengaktifkan indikator LED merah/Buzzer.
                   </p>
                 </div>
                 

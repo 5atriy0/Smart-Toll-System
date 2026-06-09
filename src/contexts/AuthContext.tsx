@@ -44,8 +44,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (updated) data = updated as Profile;
     }
 
-    if (data) setProfile(data as Profile);
-  }, []);
+    if (data) {
+      if (!data.is_active) {
+        setProfile(null);
+        setUser(null);
+        apiSignOut();
+        router.push('/login?banned=true');
+        return;
+      }
+      setProfile(data as Profile);
+    }
+  }, [router]);
 
   useEffect(() => {
     getSession().then(({ user: u, profile: p }) => {

@@ -70,7 +70,7 @@ export function LandingView() {
                   gateway — semuanya dapat diakses dari satu dashboard.
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Dibangun dengan teknologi <strong className="text-foreground">RFID</strong> untuk
+                  Dibangun dengan teknologi <strong className="text-foreground">UID</strong> untuk
                   identifikasi kendaraan, <strong className="text-foreground">ESP32</strong> sebagai
                   gateway perangkat keras, dan sistem cloud analytics untuk pengolahan data
                   transaksi secara otomatis.
@@ -97,7 +97,7 @@ export function LandingView() {
                   <h3 className="text-lg font-semibold text-foreground mb-4">Teknologi yang Digunakan</h3>
                   <div className="space-y-4">
                     {[
-                      { label: 'RFID Reader', value: 'Identifikasi kendaraan otomatis via kartu RFID' },
+                      { label: 'UID Reader', value: 'Identifikasi kendaraan otomatis via kartu UID' },
                       { label: 'ESP32', value: 'Mikrokontroler untuk kontrol gerbang & sensor' },
                       { label: 'Cloud Database', value: 'Penyimpanan & analisis data transaksi real-time' },
                       { label: 'Next.js', value: 'Frontend dashboard modern & responsif' },

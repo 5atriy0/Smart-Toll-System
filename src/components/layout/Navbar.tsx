@@ -1,9 +1,9 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, ChevronRight, UserCircle, LogOut } from 'lucide-react';
+import { User, UserCircle, LogOut } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -14,6 +14,10 @@ const PAGE_MAP: Record<string, string> = {
   '/analytics': 'Analitik',
   '/settings': 'Pengaturan',
   '/profile': 'Profil',
+  '/manajemen-akses': 'Manajemen Akses',
+  '/manajemen-akses/pengguna': 'Pengguna',
+  '/manajemen-akses/uid': 'UID',
+  '/manajemen-akses/kendaraan': 'Kendaraan',
 };
 
 export function Navbar() {
@@ -22,18 +26,6 @@ export function Navbar() {
   const [lastUpdated, setLastUpdated] = useState('baru saja');
   const [profileOpen, setProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const update = () => setLastUpdated('baru saja');
-    const interval = setInterval(() => {
-      setLastUpdated((prev) => {
-        if (prev === 'baru saja') return '30 detik lalu';
-        if (prev === '30 detik lalu') return '1 menit lalu';
-        return prev;
-      });
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -45,41 +37,27 @@ export function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const segments = pathname.split('/').filter(Boolean);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLastUpdated((prev) => {
+        if (prev === 'baru saja') return '30 detik lalu';
+        if (prev === '30 detik lalu') return '1 menit lalu';
+        return prev;
+      });
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const currentTitle = PAGE_MAP[pathname] || pathname.split('/').pop()?.replace(/-/g, ' ') || 'Dashboard';
 
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-20 flex items-center justify-between px-4 lg:px-8">
-      {/* Left: Breadcrumb + last updated */}
-      <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-1.5 text-sm">
-          <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors text-xs">
-            Dashboard
-          </Link>
-          {segments.map((seg, i) => {
-            const href = '/' + segments.slice(0, i + 1).join('/');
-            const label = PAGE_MAP[href] || seg.charAt(0).toUpperCase() + seg.slice(1);
-            const isLast = i === segments.length - 1;
-            return (
-              <span key={href} className="flex items-center gap-1.5">
-                <ChevronRight className="w-3 h-3 text-muted-foreground" />
-                {isLast ? (
-                  <span className="text-foreground font-medium text-xs">{label}</span>
-                ) : (
-                  <Link href={href} className="text-muted-foreground hover:text-foreground transition-colors text-xs">
-                    {label}
-                  </Link>
-                )}
-              </span>
-            );
-          })}
-        </div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold text-foreground tracking-tight">{currentTitle}</h1>
-          <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">
-            Diperbarui {lastUpdated}
-          </span>
-        </div>
+      {/* Left: Title + last updated */}
+      <div className="flex items-center gap-3">
+        <h1 className="text-lg font-semibold text-foreground tracking-tight">{currentTitle}</h1>
+        <span className="text-[11px] text-muted-foreground/60 hidden sm:inline">
+          Diperbarui {lastUpdated}
+        </span>
       </div>
 
       {/* Right: Theme toggle + Profile */}
@@ -94,7 +72,7 @@ export function Navbar() {
         >
           <div className="flex flex-col items-end hidden sm:flex">
             <span className="text-sm font-medium text-foreground">{profile?.name || user?.email?.split('@')[0] || 'User'}</span>
-            <span className="text-xs text-muted-foreground">{profile?.role === 'ADMIN' ? 'Administrator' : 'Operator'}</span>
+            <span className="text-xs text-muted-foreground">{profile?.role === 'ADMIN' ? 'Administrator' : 'User'}</span>
           </div>
           <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary">
             <User className="w-5 h-5" />
@@ -114,7 +92,7 @@ export function Navbar() {
                   <p className="text-sm font-semibold text-foreground truncate">{profile?.name || user?.email?.split('@')[0] || 'User'}</p>
                   <p className="text-xs text-muted-foreground truncate">{profile?.email || user?.email || ''}</p>
                   <span className="inline-block mt-0.5 text-[10px] font-medium text-[hsl(var(--sidebar-active))] uppercase tracking-wider">
-                    {profile?.role === 'ADMIN' ? 'Administrator' : 'Operator'}
+                    {profile?.role === 'ADMIN' ? 'Administrator' : 'User'}
                   </span>
                 </div>
               </div>

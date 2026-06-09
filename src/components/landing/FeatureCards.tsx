@@ -19,7 +19,7 @@ const features = [
   },
   {
     title: 'Manajemen Pengguna',
-    desc: 'Atur akun pengguna, RFID, saldo, dan riwayat transaksi dengan mudah.',
+    desc: 'Atur akun pengguna, UID, saldo, dan riwayat transaksi dengan mudah.',
     icon: Users,
   },
   {

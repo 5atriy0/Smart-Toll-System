@@ -48,7 +48,7 @@ export function LiveSensorFeed() {
                         <ArrowRightFromLine className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
                       )}
                       <span className="text-foreground">
-                        RFID {log.rfid} — {isEntry ? `Masuk ${parts[0]}` : `Keluar ${parts[1] === '-' ? parts[0] : parts[1]}`}
+                        UID {log.uid} — {isEntry ? `Masuk ${parts[0]}` : `Keluar ${parts[1] === '-' ? parts[0] : parts[1]}`}
                       </span>
                     </div>
                   </div>

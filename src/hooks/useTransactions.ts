@@ -62,7 +62,7 @@ export const useTransactions = () => {
           timeOut: tapOutDate?.toLocaleString() ?? "-",
           rawTime: item.tap_in_time,
           loc: `${item.gate_in_name || "-"} → ${item.gate_out_name || "-"}`,
-          rfid: item.uid,
+          uid: item.uid,
           plate: item.plate_number || "-",
           balance: null,
           tarif: item.fee ?? null,
@@ -90,7 +90,7 @@ export const useTransactions = () => {
     return logs.filter(
       (log) =>
         (log.id?.toLowerCase() || "").includes(q) ||
-        (log.rfid?.toLowerCase() || "").includes(q)
+        (log.uid?.toLowerCase() || "").includes(q)
     );
   }, [logs, searchQuery]);
 
