@@ -12,6 +12,7 @@ export interface AksesStats {
   inactive: number;
   noCard: number;
   progressPercent: number;
+  types?: { label: string; count: number }[];
 }
 
 export function useAkses() {
@@ -64,24 +65,24 @@ export function useAkses() {
 
   const kendaraanStats = useMemo<AksesStats>(() => {
     const total = vehicles.length;
-    const ownerIds = [...new Set(vehicles.map((v) => v.profile_id))];
-    const profileMap = new Map(data.map((u) => [u.id, u]));
-    let active = 0, inactive = 0, noCard = 0;
-    ownerIds.forEach((pid) => {
-      const u = profileMap.get(pid);
-      if (!u) return;
-      if (u.is_active && u.uid) active++;
-      else if (u.is_active && !u.uid) noCard++;
-      else inactive++;
+    const typeMap: Record<string, number> = {};
+    vehicles.forEach((v) => {
+      const t = v.vehicle_type || "UNKNOWN";
+      typeMap[t] = (typeMap[t] || 0) + 1;
     });
-    return {
-      total,
-      active,
-      inactive,
-      noCard,
-      progressPercent: total > 0 ? (active / total) * 100 : 0,
+    const TYPE_LABELS: Record<string, string> = {
+      CAR: "Mobil",
+      PICKUP: "Pickup",
+      MINIBUS: "Minibus",
+      BUS: "Bus",
+      LIGHT_TRUCK: "Truk Ringan",
+      HEAVY_TRUCK: "Truk Berat",
     };
-  }, [vehicles, data]);
+    const types = Object.entries(typeMap)
+      .map(([key, count]) => ({ label: TYPE_LABELS[key] || key, count }))
+      .sort((a, b) => b.count - a.count);
+    return { total, active: 0, inactive: 0, noCard: 0, progressPercent: 0, types };
+  }, [vehicles]);
 
   return {
     data,

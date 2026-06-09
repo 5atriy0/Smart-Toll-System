@@ -14,8 +14,8 @@ export async function POST(request: Request) {
       {
         auth: {
           autoRefreshToken: false,
-          persistSession: false
-        }
+          persistSession: false,
+        },
       }
     );
     const cookieStore = await cookies();
@@ -39,45 +39,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { profile_id, uid, plate_number, vehicle_type } = await request.json();
-    if (!profile_id || !uid || !plate_number || !vehicle_type) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    const { data: profile } = await supabaseAdmin
+    const { data: adminProfile } = await supabaseAdmin
       .from('profiles')
-      .select('id')
-      .eq('id', profile_id)
+      .select('role')
       .eq('auth_user_id', authUser.id)
       .single();
 
-    if (!profile) {
+    if (!adminProfile || adminProfile.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { data: vehicleData, error: vehicleError } = await supabaseAdmin
-      .from('vehicles')
-      .insert({ profile_id, plate_number, vehicle_type })
-      .select()
-      .single();
+    const { profile_id, new_password } = await request.json();
 
-    if (vehicleError) {
-      return NextResponse.json({ error: vehicleError.message || 'Gagal menambahkan kendaraan' }, { status: 500 });
+    if (!profile_id || !new_password) {
+      return NextResponse.json({ error: 'Parameter tidak lengkap' }, { status: 400 });
     }
 
-    const { data: cardData, error: cardError } = await supabaseAdmin
-      .from('cards')
-      .insert({ profile_id, vehicle_id: vehicleData.id, uid, balance: 0, status: 'ACTIVE' })
-      .select()
-      .single();
-
-    if (cardError) {
-      return NextResponse.json({ error: cardError.message || 'Gagal menambahkan kartu' }, { status: 500 });
+    if (new_password.length < 6) {
+      return NextResponse.json({ error: 'Password minimal 6 karakter' }, { status: 400 });
     }
 
-    return NextResponse.json({ success: true, vehicle: vehicleData, card: cardData });
+    const { data: targetProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('auth_user_id, name, email')
+      .eq('id', profile_id)
+      .single();
+
+    if (!targetProfile) {
+      return NextResponse.json({ error: 'Pengguna tidak ditemukan' }, { status: 404 });
+    }
+
+    if (!targetProfile.auth_user_id) {
+      return NextResponse.json({ error: 'Pengguna belum memiliki akun auth. Reset password tidak dapat dilakukan.' }, { status: 400 });
+    }
+
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      targetProfile.auth_user_id,
+      { password: new_password }
+    );
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('Error adding card via API:', error);
+    console.error('Error resetting password:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

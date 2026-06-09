@@ -62,35 +62,68 @@ function SummaryCard({
       </div>
       <p className="text-sm text-muted-foreground mb-1">{label}</p>
       <p className="text-2xl font-bold text-foreground mb-3">{stats.total}</p>
-      <div className="space-y-1.5 text-xs">
-        <div className="flex justify-between">
-          <span className="text-success">Aktif</span>
-          <span className="font-medium text-foreground">{stats.active}</span>
+
+      {statKey === "kendaraan" && stats.types ? (
+        <div className="space-y-1.5 text-xs">
+          {stats.types.map((t) => (
+            <div key={t.label} className="flex justify-between">
+              <span className="text-muted-foreground">{t.label}</span>
+              <span className="font-medium text-foreground">{t.count}</span>
+            </div>
+          ))}
         </div>
-        <div className="flex justify-between">
-          <span className="text-danger">Nonaktif</span>
-          <span className="font-medium text-foreground">{stats.inactive}</span>
-        </div>
-        {showNoCard && (
+      ) : (
+        <div className="space-y-1.5 text-xs">
           <div className="flex justify-between">
-            <span className="text-warning">{noCardLabel}</span>
-            <span className="font-medium text-foreground">{stats.noCard}</span>
+            <span className="text-success">Aktif</span>
+            <span className="font-medium text-foreground">{stats.active}</span>
           </div>
-        )}
-      </div>
-      <div className="mt-3 pt-3 border-t border-border">
-        <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
-          {stats.active > 0 && (
-            <div className="h-full bg-success transition-all" style={{ width: `${(stats.active / barTotal) * 100}%` }} />
-          )}
-          {showNoCard && stats.noCard > 0 && (
-            <div className="h-full bg-warning transition-all" style={{ width: `${(stats.noCard / barTotal) * 100}%` }} />
-          )}
-          {stats.inactive > 0 && (
-            <div className="h-full bg-danger transition-all" style={{ width: `${(stats.inactive / barTotal) * 100}%` }} />
+          <div className="flex justify-between">
+            <span className="text-danger">Nonaktif</span>
+            <span className="font-medium text-foreground">{stats.inactive}</span>
+          </div>
+          {showNoCard && (
+            <div className="flex justify-between">
+              <span className="text-warning">{noCardLabel}</span>
+              <span className="font-medium text-foreground">{stats.noCard}</span>
+            </div>
           )}
         </div>
-      </div>
+      )}
+
+      {statKey !== "kendaraan" && (
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
+            {stats.active > 0 && (
+              <div className="h-full bg-success transition-all cursor-pointer hover:opacity-80" style={{ width: `${(stats.active / barTotal) * 100}%` }} title={`Aktif: ${stats.active}`} />
+            )}
+            {showNoCard && stats.noCard > 0 && (
+              <div className="h-full bg-warning transition-all cursor-pointer hover:opacity-80" style={{ width: `${(stats.noCard / barTotal) * 100}%` }} title={`${noCardLabel}: ${stats.noCard}`} />
+            )}
+            {stats.inactive > 0 && (
+              <div className="h-full bg-danger transition-all cursor-pointer hover:opacity-80" style={{ width: `${(stats.inactive / barTotal) * 100}%` }} title={`Nonaktif: ${stats.inactive}`} />
+            )}
+          </div>
+        </div>
+      )}
+
+      {statKey === "kendaraan" && stats.types && stats.types.length > 1 && (
+        <div className="mt-3 pt-3 border-t border-border">
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden flex">
+            {stats.types.map((t, i) => {
+              const TYPE_BAR_COLORS = ["bg-blue-500", "bg-emerald-500", "bg-amber-500", "bg-purple-500", "bg-orange-500", "bg-rose-500"];
+              return (
+                <div
+                  key={t.label}
+                  className={`h-full ${TYPE_BAR_COLORS[i % TYPE_BAR_COLORS.length]} transition-all cursor-pointer hover:opacity-80`}
+                  style={{ width: `${(t.count / stats.total) * 100}%` }}
+                  title={`${t.label}: ${t.count}`}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
     </button>
   );
 }

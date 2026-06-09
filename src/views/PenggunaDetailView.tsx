@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { getUsers, createUser, deleteUserFull } from "@/services/userService";
+import { getUsers, deleteUserFull } from "@/services/userService";
 import { updateProfile } from "@/services/cardService";
 import { getCardsByProfile, updateCard, deleteCard } from "@/services/cardService";
 import { useToast } from "@/contexts/ToastContext";
@@ -14,7 +14,7 @@ import {
   Search, ArrowUpDown, ArrowUp, ArrowDown,
   Eye, Pencil, Trash2, Users, X, Check, Ban, CheckCircle,
   CreditCard, ArrowLeft, List, ChevronRight, Wallet,
-  User, LayoutGrid, Plus,
+  User, LayoutGrid, Plus, Key,
 } from "lucide-react";
 import type { UserWithIsActive } from "@/services/userService";
 import type { CardWithVehicle, UserRole, VehicleType } from "@/lib/types/supabase";
@@ -111,10 +111,17 @@ export function PenggunaDetailView() {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [addForm, setAddForm] = useState({
-    name: "", email: "", role: "USER" as string,
+    name: "", email: "", password: "", confirmPassword: "", role: "USER" as string,
     uid: "", plate_number: "", vehicle_type: "CAR" as string,
   });
   const [addLoading, setAddLoading] = useState(false);
+  const [showAddPassword, setShowAddPassword] = useState(false);
+
+  const [showResetPw, setShowResetPw] = useState(false);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetConfirmPassword, setResetConfirmPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [showResetPwInput, setShowResetPwInput] = useState(false);
 
   const [detailUser, setDetailUser] = useState<UserWithIsActive | null>(null);
   const [showEditForm, setShowEditForm] = useState(false);
@@ -334,26 +341,44 @@ export function PenggunaDetailView() {
   };
 
   const handleAddUser = async () => {
-    if (!addForm.name || !addForm.email) {
-      toast("Nama dan email harus diisi", "error");
+    if (!addForm.name || !addForm.email || !addForm.password) {
+      toast("Nama, email, dan password harus diisi", "error");
+      return;
+    }
+    if (addForm.password.length < 6) {
+      toast("Password minimal 6 karakter", "error");
+      return;
+    }
+    if (addForm.password !== addForm.confirmPassword) {
+      toast("Password dan konfirmasi password tidak cocok", "error");
       return;
     }
     setAddLoading(true);
-    const { error } = await createUser({
-      p_name: addForm.name,
-      p_email: addForm.email,
-      p_role: addForm.role as UserRole,
-      p_uid: addForm.uid || undefined,
-      p_plate_number: addForm.plate_number || undefined,
-      p_vehicle_type: addForm.vehicle_type ? (addForm.vehicle_type as VehicleType) : undefined,
-    });
-    if (!error) {
-      toast("Pengguna berhasil ditambahkan", "success");
-      setShowAddModal(false);
-      setAddForm({ name: "", email: "", role: "USER", uid: "", plate_number: "", vehicle_type: "CAR" });
-      fetchData();
-    } else {
-      toast("Gagal menambahkan pengguna", "error");
+    try {
+      const res = await fetch("/api/auth/users/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: addForm.name,
+          email: addForm.email,
+          password: addForm.password,
+          role: addForm.role,
+          uid: addForm.uid || undefined,
+          plate_number: addForm.plate_number || undefined,
+          vehicle_type: addForm.vehicle_type ? (addForm.vehicle_type as string) : undefined,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        toast("Pengguna berhasil ditambahkan", "success");
+        setShowAddModal(false);
+        setAddForm({ name: "", email: "", password: "", confirmPassword: "", role: "USER", uid: "", plate_number: "", vehicle_type: "CAR" });
+        fetchData();
+      } else {
+        toast(json.error || "Gagal menambahkan pengguna", "error");
+      }
+    } catch {
+      toast("Gagal menghubungi server", "error");
     }
     setAddLoading(false);
   };
@@ -551,7 +576,7 @@ export function PenggunaDetailView() {
                 <User className="w-4 h-4 text-accent" />
                 Detail Pengguna
               </h3>
-              <button onClick={() => setDetailUser(null)} className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors">
+              <button onClick={() => { setDetailUser(null); setShowResetPw(false); setResetPassword(""); setResetConfirmPassword(""); }} className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -605,6 +630,87 @@ export function PenggunaDetailView() {
                   </p>
                 </div>
               )}
+
+              <div className="border-t border-border pt-3">
+                {!showResetPw ? (
+                  <button
+                    onClick={() => { setShowResetPw(true); setResetPassword(""); setResetConfirmPassword(""); }}
+                    className="w-full px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors inline-flex items-center justify-center gap-1.5"
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                    Reset Password
+                  </button>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-[10px] text-muted-foreground uppercase font-semibold tracking-wider">Reset Password</p>
+                    <div>
+                      <label className="block text-[11px] text-muted-foreground mb-1">Password Baru</label>
+                      <div className="relative">
+                        <input type={showResetPwInput ? "text" : "password"} value={resetPassword}
+                          onChange={(e) => setResetPassword(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all pr-12" placeholder="Minimal 6 karakter" />
+                        <button type="button" onClick={() => setShowResetPwInput(!showResetPwInput)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] text-muted-foreground hover:text-foreground transition-colors">
+                          {showResetPwInput ? "Sembunyi" : "Lihat"}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-muted-foreground mb-1">Konfirmasi Password</label>
+                      <input type={showResetPwInput ? "text" : "password"} value={resetConfirmPassword}
+                        onChange={(e) => setResetConfirmPassword(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all" placeholder="Ulangi password" />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowResetPw(false)}
+                        disabled={resetLoading}
+                        className="flex-1 px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors disabled:opacity-50"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (!resetPassword || !resetConfirmPassword) {
+                            toast("Password dan konfirmasi harus diisi", "error");
+                            return;
+                          }
+                          if (resetPassword.length < 6) {
+                            toast("Password minimal 6 karakter", "error");
+                            return;
+                          }
+                          if (resetPassword !== resetConfirmPassword) {
+                            toast("Password tidak cocok", "error");
+                            return;
+                          }
+                          setResetLoading(true);
+                          try {
+                            const res = await fetch("/api/auth/users/reset-password", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ profile_id: detailUser.id, new_password: resetPassword }),
+                            });
+                            const json = await res.json();
+                            if (json.success) {
+                              toast("Password berhasil direset", "success");
+                              setShowResetPw(false);
+                            } else {
+                              toast(json.error || "Gagal mereset password", "error");
+                            }
+                          } catch {
+                            toast("Gagal menghubungi server", "error");
+                          }
+                          setResetLoading(false);
+                        }}
+                        disabled={resetLoading}
+                        className="flex-1 px-3 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-medium hover:bg-accent/90 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
+                      >
+                        {resetLoading ? "Menyimpan..." : "Simpan"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center justify-between px-5 pb-5 pt-1">
@@ -628,7 +734,7 @@ export function PenggunaDetailView() {
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setDetailUser(null)}
+                  onClick={() => { setDetailUser(null); setShowResetPw(false); setResetPassword(""); setResetConfirmPassword(""); }}
                   className="px-3 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
                 >
                   Kembali
@@ -945,7 +1051,7 @@ export function PenggunaDetailView() {
                 Tambah Pengguna
               </h3>
               <button
-                onClick={() => { setShowAddModal(false); setAddForm({ name: "", email: "", role: "USER", uid: "", plate_number: "", vehicle_type: "CAR" }); }}
+                onClick={() => { setShowAddModal(false); setAddForm({ name: "", email: "", password: "", confirmPassword: "", role: "USER", uid: "", plate_number: "", vehicle_type: "CAR" }); }}
                 className="p-1 text-muted-foreground hover:text-foreground rounded-md transition-colors"
               >
                 <X className="w-4 h-4" />
@@ -961,6 +1067,22 @@ export function PenggunaDetailView() {
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">Email</label>
                 <input type="email" value={addForm.email} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })}
                   className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all" placeholder="email@example.com" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Password</label>
+                <div className="relative">
+                  <input type={showAddPassword ? "text" : "password"} value={addForm.password} onChange={(e) => setAddForm({ ...addForm, password: e.target.value })}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all pr-10" placeholder="Minimal 6 karakter" />
+                  <button type="button" onClick={() => setShowAddPassword(!showAddPassword)}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground transition-colors px-1 py-0.5 rounded">
+                    {showAddPassword ? "Sembunyi" : "Lihat"}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5">Konfirmasi Password</label>
+                <input type={showAddPassword ? "text" : "password"} value={addForm.confirmPassword} onChange={(e) => setAddForm({ ...addForm, confirmPassword: e.target.value })}
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-accent/30 transition-all" placeholder="Ulangi password" />
               </div>
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">Role</label>
@@ -995,7 +1117,7 @@ export function PenggunaDetailView() {
             </div>
             <div className="flex justify-end gap-2 px-5 py-3.5 border-t border-border">
               <button
-                onClick={() => { setShowAddModal(false); setAddForm({ name: "", email: "", role: "USER", uid: "", plate_number: "", vehicle_type: "CAR" }); }}
+                onClick={() => { setShowAddModal(false); setAddForm({ name: "", email: "", password: "", confirmPassword: "", role: "USER", uid: "", plate_number: "", vehicle_type: "CAR" }); }}
                 className="px-4 py-2 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
               >
                 Batal

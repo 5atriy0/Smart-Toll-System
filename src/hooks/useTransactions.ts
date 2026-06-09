@@ -27,13 +27,15 @@ const computeDateFrom = (range: string): string | undefined => {
   return undefined;
 };
 
-export const useTransactions = () => {
+export const useTransactions = (controlledDateRange?: string) => {
   const [logs, setLogs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
-  const [dateRange, setDateRange] = useState("Hari Ini");
+  const [internalDateRange, setInternalDateRange] = useState("Hari Ini");
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [limit, setLimit] = useState(10);
+
+  const dateRange = controlledDateRange ?? internalDateRange;
 
   const fetchData = async () => {
     try {
@@ -105,7 +107,7 @@ export const useTransactions = () => {
     limit,
     setLimit,
     dateRange,
-    setDateRange,
+    setDateRange: controlledDateRange === undefined ? setInternalDateRange : () => {},
     searchQuery,
     setSearchQuery,
     exportData,

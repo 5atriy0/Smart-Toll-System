@@ -102,8 +102,43 @@ firmware/esp32/
 ```bash
 # Frontend
 npm install
+
 # isi .env.local dengan Supabase credentials
+# NEXT_PUBLIC_SUPABASE_URL=
+# NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+# SUPABASE_SERVICE_ROLE_KEY=   ← wajib untuk admin create/reset password user
+
 npm run dev
+```
+
+## Role-Based Routing
+
+| Role | Login → Redirect | Akses |
+|------|------------------|-------|
+| **Admin** | `/dashboard` | Sidebar + semua menu (manajemen akses, settings, users, dll) |
+| **User** | `/user` | Header simpel + wallet pribadi, topup, kartu, riwayat transaksi |
+
+- Admin bisa tambah pengguna **dengan password** (via modal Tambah Pengguna)
+- Admin bisa **reset password** user lain (via modal Detail Pengguna → Reset Password)
+- User registrasi mandiri → role `USER`, hanya bisa akses `/user/*`
+
+## Dashboard Filtering
+
+Dashboard punya filter waktu di bagian atas: **Hari Ini | 7 Hari Terakhir | Bulan Ini | Semua Waktu**
+
+Filter ini mengubah:
+- **Pendapatan** — dihitung dari transaksi di periode terpilih
+- **Kecepatan Rata-rata** & **Waktu Tempuh** — dari transaksi di periode
+- **Transaksi Terbaru** — tabel ikut terfilter
+- **Total Pengguna** & **Kendaraan Terdaftar** — tetap all-time (tidak berubah)
+
+## Proteksi Route
+
+- **Middleware** (`middleware.ts`) — refresh session cookie via Supabase SSR
+- **`ProtectedRoute`** — client-side guard per layout:
+  - Dashboard → `allowedRoles: ['ADMIN']`
+  - User → `allowedRoles: ['USER', 'ADMIN']`
+- **API Routes** — semua route yang pakai `SUPABASE_SERVICE_ROLE_KEY` wajib validasi session + role admin
 
 # Database Setup
 # Skema database, RPC functions, dan trigger sudah ada di Supabase.
