@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
-import type { VwTransactionDetails } from "@/lib/types/supabase";
+import type { VwTransactionDetails, UpdateTransactionParams, DeleteTransactionParams, Gate } from "@/lib/types/supabase";
 
 export interface GetTransactionsParams {
   dateFrom?: string;
@@ -32,4 +32,31 @@ export const getTransactions = async (
   }
 
   return data as unknown as GetTransactionsResult;
+};
+
+export const updateTransaction = async (params: UpdateTransactionParams) => {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("update_transaction", params);
+  return { error };
+};
+
+export const deleteTransaction = async (params: DeleteTransactionParams) => {
+  const supabase = createClient();
+  const { error } = await supabase.rpc("delete_transaction", params);
+  return { error };
+};
+
+export const getGates = async (): Promise<Gate[]> => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("gates")
+    .select("id, name, location, status, created_at")
+    .order("name");
+
+  if (error) {
+    console.error("getGates error:", error);
+    return [];
+  }
+
+  return data as Gate[];
 };

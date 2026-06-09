@@ -28,9 +28,7 @@ export const updateSetting = async (
   value: string
 ): Promise<boolean> => {
   const supabase = createClient();
-  const { error } = await supabase
-    .from("system_settings")
-    .upsert({ key, value, updated_at: new Date().toISOString() });
+  const { error } = await supabase.rpc("update_setting", { p_key: key, p_value: value });
 
   if (error) {
     console.error("updateSetting error:", error);

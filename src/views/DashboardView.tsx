@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Users, Car, TrendingUp, Clock, Gauge, ArrowUp, ArrowDown, Activity, AlertTriangle, Wrench } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
-import { useTransactions } from '@/hooks/useTransactions'
+import { getTransactions } from '@/services/transactionService'
 import { SkeletonCard } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import Link from 'next/link'
@@ -48,12 +48,65 @@ function StatCard({ title, value, icon, trend, loading }: StatCardProps) {
   );
 }
 
+const parseUTC = (ts: string | null) => {
+  if (!ts) return null;
+  return new Date(ts.endsWith("Z") || ts.includes("+") ? ts : ts + "Z");
+};
+
+const computeDateFrom = (range: string): string | undefined => {
+  const now = new Date();
+  if (range === "Hari Ini") {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return d.toISOString();
+  }
+  if (range === "7 Hari Terakhir") {
+    const d = new Date();
+    d.setDate(now.getDate() - 7);
+    return d.toISOString();
+  }
+  if (range === "Bulan Ini") {
+    const d = new Date(now.getFullYear(), now.getMonth(), 1);
+    return d.toISOString();
+  }
+  return undefined;
+};
+
 export function DashboardView() {
   const [dateRange, setDateRange] = useState('Hari Ini');
-  const { logs, loading: txLoading } = useTransactions(dateRange);
+  const [txLogs, setTxLogs] = useState<any[]>([]);
+  const [txLoading, setTxLoading] = useState(true);
   const { todayMetrics, recentAlerts, esp32Status, loading: analyticsLoading } = useAnalytics(dateRange);
 
   const loading = txLoading || analyticsLoading;
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetch = async () => {
+      setTxLoading(true);
+      const result = await getTransactions({ dateFrom: computeDateFrom(dateRange), limit: 5 });
+      if (!cancelled && result) {
+        setTxLogs(result.data.map((item) => {
+          const statusLabel = item.status === "COMPLETED" ? "SELESAI" : item.status === "IN_PROGRESS" ? "DI PERJALANAN" : "BELUM MASUK";
+          const tapInDate = parseUTC(item.tap_in_time);
+          const tapOutDate = parseUTC(item.tap_out_time);
+          return {
+            id: item.id,
+            timeIn: tapInDate?.toLocaleString() ?? "-",
+            timeOut: tapOutDate?.toLocaleString() ?? "-",
+            rawTime: item.tap_in_time,
+            loc: `${item.gate_in_name || "-"} → ${item.gate_out_name || "-"}`,
+            uid: item.uid,
+            status: statusLabel,
+          };
+        }));
+      }
+      if (!cancelled) setTxLoading(false);
+    };
+    fetch();
+    return () => { cancelled = true; };
+  }, [dateRange]);
+
+  const recentTx = [...txLogs].slice(0, 5);
 
   const metricCards = [
     {
@@ -87,8 +140,6 @@ export function DashboardView() {
       loading,
     },
   ];
-
-  const recentTx = [...logs].slice(0, 5);
 
   return (
     <div className="space-y-6">

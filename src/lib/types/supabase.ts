@@ -168,6 +168,33 @@ export interface VwUserDashboard {
   total_transactions: number;
 }
 
+export interface AnalyticsWeekly {
+  id: number;
+  week_start: string;
+  total_transactions: number;
+  completed_transactions: number;
+  total_revenue: number;
+  avg_fee: number;
+  avg_distance_km: number;
+  avg_duration_min: number;
+  unique_cards: number;
+  unique_vehicles: number;
+  created_at: string;
+}
+
+export interface AnalyticsMonthly {
+  id: number;
+  month: string;
+  total_transactions: number;
+  total_revenue: number;
+  avg_fee: number;
+  avg_distance_km: number;
+  unique_cards: number;
+  unique_vehicles: number;
+  active_gates: number;
+  created_at: string;
+}
+
 // ─────────────────────────────────────────────
 // VIEW TYPES (additional)
 // ─────────────────────────────────────────────
@@ -278,6 +305,24 @@ export interface DeleteVehicleParams {
   p_vehicle_id: string;
 }
 
+export interface UpdateTransactionParams {
+  p_transaction_id: string;
+  p_status?: string;
+  p_fee?: number;
+  p_gate_out_id?: string;
+  p_tap_out_time?: string;
+  p_distance_km?: number;
+}
+
+export interface DeleteTransactionParams {
+  p_transaction_id: string;
+}
+
+export interface UpdateSettingParams {
+  p_key: string;
+  p_value: string;
+}
+
 // ─────────────────────────────────────────────
 // RPC RETURN TYPES
 // ─────────────────────────────────────────────
@@ -319,6 +364,10 @@ export type UpdateCardResult = void;
 export type DeleteCardResult = void;
 export type UpdateVehicleResult = void;
 export type DeleteVehicleResult = void;
+export type UpdateTransactionResult = void;
+export type DeleteTransactionResult = void;
+export type ActiveGatesResult = number;
+export type UpdateSettingResult = void;
 
 // ─────────────────────────────────────────────
 // DATABASE TYPE MAP (for generated types)
@@ -358,6 +407,9 @@ export interface Database {
       delete_card: { Args: DeleteCardParams; Returns: DeleteCardResult };
       update_vehicle: { Args: UpdateVehicleParams; Returns: UpdateVehicleResult };
       delete_vehicle: { Args: DeleteVehicleParams; Returns: DeleteVehicleResult };
+      update_transaction: { Args: UpdateTransactionParams; Returns: UpdateTransactionResult };
+      delete_transaction: { Args: DeleteTransactionParams; Returns: DeleteTransactionResult };
+      update_setting: { Args: UpdateSettingParams; Returns: UpdateSettingResult };
     };
   };
 }

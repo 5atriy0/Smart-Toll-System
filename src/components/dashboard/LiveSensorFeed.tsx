@@ -1,11 +1,34 @@
 'use client';
 
-import { useTransactions } from '@/hooks/useTransactions';
+import { useEffect, useState } from 'react';
+import { getTransactions } from '@/services/transactionService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ActivitySquare, Wifi, ArrowLeftFromLine, ArrowRightFromLine } from 'lucide-react';
 
 export function LiveSensorFeed() {
-  const { logs } = useTransactions();
+  const [logs, setLogs] = useState<any[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetch = async () => {
+      const result = await getTransactions({ limit: 5 });
+      if (!cancelled && result) {
+        setLogs(result.data.map((item) => {
+          const statusLabel = item.status === "COMPLETED" ? "SELESAI" : item.status === "IN_PROGRESS" ? "DI PERJALANAN" : "BELUM MASUK";
+          return {
+            id: item.id,
+            loc: `${item.gate_in_name || "-"} → ${item.gate_out_name || "-"}`,
+            uid: item.uid,
+            status: statusLabel,
+            rawTime: item.tap_in_time,
+          };
+        }));
+      }
+    };
+    fetch();
+    return () => { cancelled = true; };
+  }, []);
+
   const recentLogs = logs.slice(0, 5);
 
   return (
