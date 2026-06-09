@@ -132,8 +132,7 @@ export function ProfileView() {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 transition-colors"
-                      style={{ focusRingColor: 'hsl(var(--accent))' }}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
                       placeholder="Masukkan nama"
                     />
                   </div>
