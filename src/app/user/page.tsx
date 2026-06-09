@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createClient } from '@/lib/supabase/client';
 import { Card } from '@/components/ui/card';
-import { Wallet, CreditCard, Plus, History, Loader2, AlertTriangle, CheckCircle, Car } from 'lucide-react';
+import { Wallet, CreditCard, Plus, History, Loader2, AlertTriangle, CheckCircle, Car, Trash2, ChevronDown } from 'lucide-react';
 
 export default function UserPage() {
   const { profile } = useAuth();
@@ -28,6 +28,11 @@ export default function UserPage() {
   const [vehicleType, setVehicleType] = useState('CAR');
   const [addCardLoading, setAddCardLoading] = useState(false);
   const [addCardMessage, setAddCardMessage] = useState({ type: '', text: '' });
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [vehicleDropdownOpen, setVehicleDropdownOpen] = useState(false);
+  
+  // Modal Delete State
+  const [cardToDelete, setCardToDelete] = useState<{uid: string, vehicle_id: string} | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -107,31 +112,22 @@ export default function UserPage() {
     setAddCardMessage({ type: '', text: '' });
     
     try {
-      // 1. Create Vehicle
-      const { data: vehicleData, error: vehicleError } = await supabase
-        .from('vehicles')
-        .insert({
+      const response = await fetch('/api/user/add-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           profile_id: profile?.id,
+          uid: newUid,
           plate_number: plateNumber,
           vehicle_type: vehicleType
         })
-        .select()
-        .single();
-        
-      if (vehicleError) throw vehicleError;
-      
-      // 2. Create Card
-      const { error: cardError } = await supabase
-        .from('cards')
-        .insert({
-          profile_id: profile?.id,
-          vehicle_id: vehicleData.id,
-          uid: newUid,
-          balance: 0,
-          status: 'ACTIVE'
-        });
-        
-      if (cardError) throw cardError;
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || 'Terjadi kesalahan pada server');
+      }
       
       setAddCardMessage({ type: 'success', text: 'Kartu berhasil ditambahkan!' });
       setNewUid('');
@@ -142,6 +138,31 @@ export default function UserPage() {
       setAddCardMessage({ type: 'error', text: err.message || 'Terjadi kesalahan' });
     } finally {
       setAddCardLoading(false);
+    }
+  };
+
+  const handleDeleteCard = async () => {
+    if (!cardToDelete) return;
+    const { uid, vehicle_id } = cardToDelete;
+    
+    setDeleteLoading(uid);
+    try {
+      const response = await fetch('/api/user/delete-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profile?.id, uid, vehicle_id })
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        alert(data.error || 'Terjadi kesalahan saat menghapus kartu');
+      } else {
+        await fetchData();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Terjadi kesalahan pada server');
+    } finally {
+      setDeleteLoading(null);
+      setCardToDelete(null);
     }
   };
 
@@ -254,17 +275,17 @@ export default function UserPage() {
           </h3>
           <form onSubmit={handleAddCard} className="space-y-4 max-w-md">
             <div>
-              <label className="block text-sm font-medium mb-1.5">UID Kartu</label>
+              <label className="block text-sm font-medium mb-1.5">No Kartu</label>
               <input 
                 type="text" 
-                placeholder="Contoh: 1A2B3C4D"
+                placeholder="Contoh: 12345678"
                 className="w-full h-11 px-3 rounded-lg border border-input bg-background uppercase"
                 value={newUid}
                 onChange={(e) => setNewUid(e.target.value.toUpperCase())}
                 required
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">Plat Nomor</label>
                 <input 
@@ -278,17 +299,45 @@ export default function UserPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1.5">Tipe Kendaraan</label>
-                <select 
-                  className="w-full h-11 px-3 rounded-lg border border-input bg-background"
-                  value={vehicleType}
-                  onChange={(e) => setVehicleType(e.target.value)}
-                >
-                  <option value="CAR">Mobil (Gol I)</option>
-                  <option value="PICKUP">Pickup (Gol I)</option>
-                  <option value="BUS">Bus (Gol I)</option>
-                  <option value="LIGHT_TRUCK">Truk Ringan (Gol II)</option>
-                  <option value="HEAVY_TRUCK">Truk Berat (Gol III+)</option>
-                </select>
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setVehicleDropdownOpen(!vehicleDropdownOpen)}
+                    className="w-full h-11 px-3 rounded-lg border border-input bg-background flex items-center justify-between text-left focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <span>
+                      {vehicleType === 'CAR' ? 'Mobil' :
+                       vehicleType === 'PICKUP' ? 'Pickup' :
+                       vehicleType === 'BUS' ? 'Bus' :
+                       vehicleType === 'LIGHT_TRUCK' ? 'Truk Ringan' : 'Truk Berat'}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                  
+                  {vehicleDropdownOpen && (
+                    <div className="absolute z-10 w-full mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden py-1">
+                      {[
+                        { id: 'CAR', label: 'Mobil' },
+                        { id: 'PICKUP', label: 'Pickup' },
+                        { id: 'BUS', label: 'Bus' },
+                        { id: 'LIGHT_TRUCK', label: 'Truk Ringan' },
+                        { id: 'HEAVY_TRUCK', label: 'Truk Berat' },
+                      ].map((item) => (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => {
+                            setVehicleType(item.id);
+                            setVehicleDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors ${vehicleType === item.id ? 'bg-primary/10 text-primary font-medium' : 'text-foreground'}`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
             {addCardMessage.text && (
@@ -336,11 +385,21 @@ export default function UserPage() {
                       <p className="text-xs text-muted-foreground font-mono mt-0.5">{card.uid}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-primary">Rp {card.balance.toLocaleString('id-ID')}</p>
-                    <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-600">
-                      {card.status}
-                    </span>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-bold text-primary">Rp {card.balance.toLocaleString('id-ID')}</p>
+                      <span className="inline-flex items-center mt-1 px-2 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-600">
+                        {card.status}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={() => setCardToDelete({ uid: card.uid, vehicle_id: card.vehicle_id })}
+                      disabled={deleteLoading === card.uid}
+                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                      title="Hapus Kartu"
+                    >
+                      {deleteLoading === card.uid ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
               ))
@@ -365,12 +424,12 @@ export default function UserPage() {
             ) : (
               transactions.map(tx => (
                 <div key={tx.id} className="p-4 rounded-xl border border-border bg-card text-sm">
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2 gap-2">
                     <div>
-                      <p className="font-semibold text-foreground">{tx.gate_in_name} <span className="text-muted-foreground font-normal mx-1">→</span> {tx.gate_out_name || '...'}</p>
+                      <p className="font-semibold text-foreground line-clamp-2">{tx.gate_in_name} <span className="text-muted-foreground font-normal mx-1">→</span> {tx.gate_out_name || '...'}</p>
                       <p className="text-xs text-muted-foreground mt-1">{new Date(tx.created_at).toLocaleString('id-ID')}</p>
                     </div>
-                    <p className="font-bold text-destructive">-Rp {tx.fee?.toLocaleString('id-ID') || 0}</p>
+                    <p className="font-bold text-destructive whitespace-nowrap sm:text-right">-Rp {tx.fee?.toLocaleString('id-ID') || 0}</p>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50 text-xs text-muted-foreground">
                     <span>{tx.plate_number}</span>
@@ -382,6 +441,42 @@ export default function UserPage() {
           </div>
         </Card>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {cardToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <Card className="w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-4 text-destructive">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="text-lg font-bold">Hapus Kartu</h3>
+            </div>
+            
+            <p className="text-sm text-muted-foreground mb-6">
+              Apakah Anda yakin ingin menghapus kartu dengan nomor <strong className="text-foreground">{cardToDelete.uid}</strong>? Tindakan ini tidak dapat dibatalkan.
+            </p>
+            
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setCardToDelete(null)}
+                disabled={deleteLoading !== null}
+                className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-accent rounded-lg transition-colors"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={handleDeleteCard}
+                disabled={deleteLoading !== null}
+                className="px-4 py-2 text-sm font-medium bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-lg transition-colors flex items-center gap-2"
+              >
+                {deleteLoading !== null ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                Ya, Hapus Kartu
+              </button>
+            </div>
+          </Card>
+        </div>
+      )}
 
     </div>
   );
