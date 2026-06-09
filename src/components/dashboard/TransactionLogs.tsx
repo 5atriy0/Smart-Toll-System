@@ -112,7 +112,7 @@ export function TransactionLogs() {
                       <td className="px-5 py-3 whitespace-nowrap text-foreground">{tx.timeIn}</td>
                       <td className="px-5 py-3 whitespace-nowrap text-muted-foreground">{tx.timeOut}</td>
                       <td className="px-5 py-3 text-muted-foreground">{tx.loc}</td>
-                      <td className="px-5 py-3 font-mono text-xs text-muted-foreground">{tx.rfid}</td>
+                      <td className="px-5 py-3 font-mono text-xs text-muted-foreground">{tx.uid}</td>
                       <td className="px-5 py-3 text-muted-foreground">
                         {tx.duration !== null ? (
                           tx.duration < 1

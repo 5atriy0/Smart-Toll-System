@@ -128,7 +128,7 @@ export function DashboardView() {
                   {recentTx.map((log) => (
                     <tr key={log.id} className="hover:bg-primary/5 transition-colors">
                       <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground">{log.timeIn}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap font-mono text-foreground">{log.rfid}</td>
+                      <td className="px-5 py-3.5 whitespace-nowrap font-mono text-foreground">{log.uid}</td>
                       <td className="px-5 py-3.5 whitespace-nowrap text-muted-foreground">{log.loc}</td>
                       <td className="px-5 py-3.5 whitespace-nowrap text-right">
                         <span className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-medium border ${
@@ -215,7 +215,7 @@ export function DashboardView() {
         <h2 className="text-base font-semibold text-foreground mb-4">Pintasan Cepat</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { title: 'Pengguna', desc: 'Kelola akun & RFID', href: '/users', icon: <Users className="w-5 h-5" /> },
+            { title: 'Pengguna', desc: 'Kelola akun & UID', href: '/users', icon: <Users className="w-5 h-5" /> },
             { title: 'Transaksi', desc: 'Riwayat pembayaran', href: '/transactions', icon: <Activity className="w-5 h-5" /> },
             { title: 'Analitik', desc: 'Grafik & laporan', href: '/analytics', icon: <TrendingUp className="w-5 h-5" /> },
             { title: 'Pengaturan', desc: 'Konfigurasi sistem', href: '/settings', icon: <Wrench className="w-5 h-5" /> },

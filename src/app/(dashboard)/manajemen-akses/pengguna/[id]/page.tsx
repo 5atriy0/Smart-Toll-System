@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
 
-export default function UsersPage() {
+export default async function UserCardDetailPage() {
   redirect('/manajemen-akses/pengguna')
 }

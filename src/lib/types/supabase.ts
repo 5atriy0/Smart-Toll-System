@@ -26,6 +26,7 @@ export interface Profile {
   name: string;
   email: string;
   role: UserRole;
+  is_active: boolean;
   created_at: string;
 }
 
@@ -42,7 +43,7 @@ export interface Vehicle {
 export interface Card {
   id: string;
   profile_id: string;
-  vehicle_id: string;
+  vehicle_id: string | null;
   uid: string;
   balance: number;
   status: CardStatus;
@@ -168,6 +169,44 @@ export interface VwUserDashboard {
 }
 
 // ─────────────────────────────────────────────
+// VIEW TYPES (additional)
+// ─────────────────────────────────────────────
+export interface VwUsersSummary {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  card_count: number;
+  vehicle_count: number;
+  created_at: string;
+}
+
+export interface CardWithVehicle {
+  id: string;
+  uid: string;
+  balance: number;
+  status: CardStatus;
+  vehicle_id: string | null;
+  plate_number: string | null;
+  vehicle_type: VehicleType | null;
+  brand: string | null;
+  color: string | null;
+}
+
+export interface CardWithUser {
+  id: string;
+  uid: string;
+  balance: number;
+  status: CardStatus;
+  profile_id: string;
+  profile_name: string;
+  profile_email: string;
+  vehicle_id: string | null;
+  plate_number: string | null;
+  vehicle_type: string | null;
+}
+
+// ─────────────────────────────────────────────
 // RPC PARAMETERS
 // ─────────────────────────────────────────────
 export interface TapInParams {
@@ -195,14 +234,48 @@ export interface UpdateCardStatusParams {
 export interface CreateUserWithCardParams {
   p_name: string;
   p_email: string;
-  p_uid: string;
-  p_plate_number: string;
-  p_vehicle_type: VehicleType;
   p_role: UserRole;
+  p_uid?: string;
+  p_plate_number?: string;
+  p_vehicle_type?: VehicleType;
 }
 
 export interface CheckCardParams {
   p_uid: string;
+}
+
+export interface GetCardsByProfileParams {
+  p_profile_id: string;
+}
+
+export interface AddCardParams {
+  p_profile_id: string;
+  p_uid: string;
+  p_vehicle_id: string;
+  p_balance?: number;
+}
+
+export interface UpdateCardParams {
+  p_card_id: string;
+  p_balance?: number;
+  p_status?: CardStatus;
+  p_vehicle_id?: string;
+}
+
+export interface DeleteCardParams {
+  p_card_id: string;
+}
+
+export interface UpdateVehicleParams {
+  p_vehicle_id: string;
+  p_plate_number?: string;
+  p_vehicle_type?: string;
+  p_brand?: string;
+  p_color?: string;
+}
+
+export interface DeleteVehicleParams {
+  p_vehicle_id: string;
 }
 
 // ─────────────────────────────────────────────
@@ -239,6 +312,13 @@ export type TapOutResult = void;
 export type TopUpResult = void;
 export type UpdateCardStatusResult = void;
 export type CreateUserWithCardResult = string; // profile_id (UUID)
+export type GetUsersSummaryResult = VwUsersSummary[];
+export type GetCardsByProfileResult = CardWithVehicle[];
+export type AddCardResult = string; // card_id (UUID)
+export type UpdateCardResult = void;
+export type DeleteCardResult = void;
+export type UpdateVehicleResult = void;
+export type DeleteVehicleResult = void;
 
 // ─────────────────────────────────────────────
 // DATABASE TYPE MAP (for generated types)
@@ -271,6 +351,13 @@ export interface Database {
       get_dashboard_stats: { Args: Record<string, never>; Returns: DashboardStats };
       get_full_dashboard: { Args: Record<string, never>; Returns: FullDashboardResult };
       check_card: { Args: CheckCardParams; Returns: CheckCardResult };
+      get_users_summary: { Args: Record<string, never>; Returns: GetUsersSummaryResult };
+      get_cards_by_profile: { Args: GetCardsByProfileParams; Returns: GetCardsByProfileResult };
+      add_card: { Args: AddCardParams; Returns: AddCardResult };
+      update_card: { Args: UpdateCardParams; Returns: UpdateCardResult };
+      delete_card: { Args: DeleteCardParams; Returns: DeleteCardResult };
+      update_vehicle: { Args: UpdateVehicleParams; Returns: UpdateVehicleResult };
+      delete_vehicle: { Args: DeleteVehicleParams; Returns: DeleteVehicleResult };
     };
   };
 }
