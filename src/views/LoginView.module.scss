@@ -272,6 +272,35 @@
   color: #ef4444;
 }
 
+.bannedBox {
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: rgba(234, 179, 8, 0.1);
+  border: 1px solid rgba(234, 179, 8, 0.2);
+  margin-bottom: 1rem;
+}
+
+.bannedIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #eab308;
+  margin: 0 auto 0.5rem;
+}
+
+.bannedTitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #eab308;
+  margin-bottom: 0.25rem;
+}
+
+.bannedDesc {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.5;
+}
+
 // ── Row (remember + forgot) ──
 
 .row {

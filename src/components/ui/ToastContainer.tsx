@@ -18,7 +18,7 @@ const BORDER_MAP: Record<string, string> = {
 function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
   return (
     <div
-      className={`flex items-start gap-2.5 px-4 py-3 rounded-lg border shadow-lg backdrop-blur-md bg-card/95 min-w-[280px] max-w-sm animate-in slide-in-from-right-5 ${BORDER_MAP[toast.type]}`}
+      className={`flex items-start gap-2.5 px-4 py-3 rounded-lg border shadow-lg backdrop-blur-md bg-card/95 min-w-[280px] max-w-sm animate-in slide-in-from-top-5 ${BORDER_MAP[toast.type]}`}
     >
       <span className="mt-0.5 flex-shrink-0">{ICON_MAP[toast.type]}</span>
       <p className="text-sm text-foreground flex-1 leading-snug">{toast.message}</p>
@@ -35,7 +35,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2" role="status" aria-live="polite">
+    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-2" role="status" aria-live="polite">
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} onClose={() => {}} />
       ))}
