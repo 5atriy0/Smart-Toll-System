@@ -25,7 +25,8 @@ export function useNfcScan() {
           reader.onreading = null
           reader.onreadingerror = null
           setNfcReading(false)
-          resolve(serialNumber || null)
+          const cleaned = (serialNumber || '').replace(/:/g, '').toUpperCase()
+          resolve(cleaned || null)
         }
         reader.onreadingerror = () => {
           clearTimeout(timeout)
