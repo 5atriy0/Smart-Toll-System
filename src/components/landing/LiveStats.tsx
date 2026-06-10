@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { getLandingStats, type LandingStats } from '@/services/landingService';
 
 function Counter({ target, suffix = '', decimals = 0 }: { target: number; suffix?: string; decimals?: number }) {
   const [value, setValue] = useState(0);
@@ -48,14 +49,24 @@ function Counter({ target, suffix = '', decimals = 0 }: { target: number; suffix
   );
 }
 
-const stats = [
-  { label: 'Total Kendaraan', target: 28450, suffix: '+', icon: '🚗' },
-  { label: 'Pendapatan Hari Ini', target: 18750000, prefix: 'Rp ', decimals: 0, icon: null },
-  { label: 'Pengguna Aktif', target: 3420, suffix: '+', icon: '👤' },
-  { label: 'Transaksi Hari Ini', target: 1256, suffix: '', icon: '📊' },
-];
-
 export function LiveStats() {
+  const [stats, setStats] = useState<LandingStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getLandingStats().then((data) => {
+      setStats(data);
+      setLoading(false);
+    });
+  }, []);
+
+  const cards = [
+    { label: 'Total Kendaraan', value: stats?.total_vehicles ?? 0, suffix: '+', icon: '🚗', prefix: '' },
+    { label: 'Pendapatan Hari Ini', value: stats?.today_revenue ?? 0, prefix: 'Rp ', decimals: 0, icon: null, suffix: '' },
+    { label: 'Pengguna Aktif', value: stats?.total_users ?? 0, suffix: '+', icon: '👤', prefix: '' },
+    { label: 'Total Transaksi', value: stats?.total_transactions ?? 0, suffix: '', icon: '📊', prefix: '' },
+  ];
+
   return (
     <section id="stats" className="relative py-20 lg:py-28">
       <div
@@ -76,17 +87,27 @@ export function LiveStats() {
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-8">
-          {stats.map((s) => (
+          {cards.map((s) => (
             <div
               key={s.label}
               className="relative text-center p-6 lg:p-8 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm"
             >
-              {s.icon && <div className="text-3xl mb-3" aria-hidden="true">{s.icon}</div>}
-              <div className="text-2xl lg:text-3xl font-bold text-accent mb-2">
-                {s.prefix || ''}
-                <Counter target={s.target} suffix={s.suffix || ''} decimals={s.decimals || 0} />
-              </div>
-              <div className="text-sm text-white/60">{s.label}</div>
+              {loading ? (
+                <div className="space-y-3">
+                  {s.icon && <div className="text-3xl mb-3 opacity-20" aria-hidden="true">{s.icon}</div>}
+                  <div className="h-8 w-24 mx-auto rounded shimmer" />
+                  <div className="h-4 w-32 mx-auto rounded shimmer" />
+                </div>
+              ) : (
+                <>
+                  {s.icon && <div className="text-3xl mb-3" aria-hidden="true">{s.icon}</div>}
+                  <div className="text-2xl lg:text-3xl font-bold text-accent mb-2">
+                    {s.prefix || ''}
+                    <Counter target={s.value} suffix={s.suffix || ''} decimals={s.decimals || 0} />
+                  </div>
+                  <div className="text-sm text-white/60">{s.label}</div>
+                </>
+              )}
             </div>
           ))}
         </div>
